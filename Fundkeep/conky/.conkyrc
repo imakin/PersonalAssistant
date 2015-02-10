@@ -1,0 +1,64 @@
+#############################################
+# Taken out from Distro Australis Mate 1.6  #
+# Modified by Umair http://www.NoobsLab.com #
+#############################################
+﻿background yes
+use_xft yes
+xftfont shrapnel:size=9
+xftalpha 1
+update_interval 1.0
+total_run_times 0
+own_window yes
+own_window_transparent yes
+own_window_type normal
+own_window_argb_visual yes
+own_window_type conky
+own_window_hints undecorated,below,sticky,skip_taskbar,skip_pager
+
+double_buffer yes
+minimum_size 750 20
+#default_bar_size 60 8
+maximum_width 750
+maximum_length 50
+draw_shades no
+draw_outline no
+draw_borders no
+draw_graph_borders no
+default_color c6c4c7
+default_shade_color 000000
+default_outline_color 828282
+alignment top_right
+gap_x 50
+gap_y 100
+no_buffers yes
+uppercase no
+cpu_avg_samples 2
+override_utf8_locale no
+##############################################
+#  Output
+##############################################
+TEXT
+
+
+
+${offset 600}${voffset -12}${font capture it:size=70}${color c6c4c7}${time %I}
+${offset 600}${color 8A8A8A}${offset 20}${voffset -60}${font capture it:size=75}${time %M}
+${offset 600}${font capture it:size=10}${voffset -90}${color c6c4c7}${time %A}
+${offset 600}${voffset 0}${color B7B7B7}${time %B %d}
+${offset 600}${font capture it:size=11}
+${offset 600}Processes:${alignr 0}${running_processes} / ${processes}
+${offset 600}CPU1:$alignr${cpu cpu1}%
+${offset 600}${cpubar cpu1 5,150}
+${offset 600}CPU2:$alignr${cpu cpu2}%
+${offset 600}${cpubar cpu2 5,150}
+${offset 600}CPU3:$alignr${cpu cpu3}%
+${offset 600}${cpubar cpu3 5,150}
+${offset 600}CPU4:$alignr${cpu cpu4}%
+${offset 600}${cpubar cpu4 5,150}
+${offset 600}${color FFD8D8}RAM:$alignr$mem/3.3GiB
+${offset 600}${membar 5,150}
+${offset 600}SWAP:$alignr$swap/4GiB
+${offset 600}${swapbar 5,150}
+${execi 5 cat /media/kentir1/Development/Linux_Program/Fundkeep/conky/display}
+===============
+${image /media/kentir1/Pictures/jpn_t0.png}
