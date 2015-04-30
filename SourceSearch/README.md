@@ -4,7 +4,7 @@ Search certain text within files
 
 
 example 
-	```
+```bash
 	chmod a+x ms_search
 	./ms_search getLogoAlt .
-	```
+```
