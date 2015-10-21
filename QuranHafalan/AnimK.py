@@ -3,12 +3,12 @@ from PySide import QtCore, QtGui
 class MakinButton(QtGui.QPushButton):
 	"""custom qpushbutton ta kei ono sinyal dihover & dileave"""
 	"""gawe slot? http://www.pythoncentral.io/pysidepyqt-tutorial-creating-your-own-signals-and-slots/"""
-	try:#--for pyqt4
-		dihover = QtCore.pyqtSignal()
-		dileave = QtCore.pyqtSignal()
-	except:#-- for pyside 
-		dihover = QtCore.Signal()
-		dileave = QtCore.Signal()
+	#~ try:#--for pyqt4
+		#~ dihover = QtCore.pyqtSignal()
+		#~ dileave = QtCore.pyqtSignal()
+	#~ except:#-- for pyside 
+	dihover = QtCore.Signal()
+	dileave = QtCore.Signal()
 		
 	def __init__(self,text="",parent=None):
 		super(MakinButton,self).__init__(text,parent)

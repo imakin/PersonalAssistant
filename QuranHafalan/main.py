@@ -6,6 +6,7 @@ from AnimK import MakinButton,MakinButtonExit
 
 SURAT = 81
 AYAT = 4
+QURANDIR = "/media/kentir1/Development/Ebook/quran/img/"
 def Surat():
 	if SURAT<10:
 		return "s00"+str(SURAT)
@@ -46,11 +47,15 @@ class MainGUI(QtGui.QMainWindow):
 		self.graphicsView.setObjectName("graphicsView")
 		self.igr_cetralwidget.addWidget(self.graphicsView, 0, 0, 1, 1)
 		
+		#~ self.centralwidget.setAtribute(QtCore.Qt.WA_TranslucentBackground)
+		#~ self.centralwidget.setStyleSheet("background:transparent;");
+		self.setWindowFlags(QtCore.Qt.FramelessWindowHint);
+		
 		
 	def DrawImage(self):
 		self.startTimer.stop()
 		self.scene = QtGui.QGraphicsScene(self)
-		self.image = QtGui.QPixmap("/media/kentir1/Development/Ebook/quran/img/"+Surat()+"/"+Ayat())
+		self.image = QtGui.QPixmap(QURANDIR+Surat()+"/"+Ayat())
 		self.scene.addPixmap(self.image)
 		self.graphicsView.setScene(self.scene)
 		#-- Exit button
@@ -73,6 +78,7 @@ class MainGUI(QtGui.QMainWindow):
 		self.tb_Next.setProperty("cursor", QtCore.Qt.PointingHandCursor)
 		self.tb_Next.show()
 		self.tb_Next.clicked.connect(self.Next)
+		self.tb_Next.dihover.connect(self.Tes)
 		
 		self.tb_Prev = MakinButtonExit("<<",self,0,250,3,40,"80,50,30","180,50,30")
 		self.tb_Prev.setGeometry(QtCore.QRect(2, WinH/2-size/2, size, size))
@@ -80,6 +86,9 @@ class MainGUI(QtGui.QMainWindow):
 		self.tb_Prev.setProperty("cursor", QtCore.Qt.PointingHandCursor)
 		self.tb_Prev.show()
 		self.tb_Prev.clicked.connect(self.Prev)
+	
+	def Tes(self):
+		print "tes"
 	
 	def Next(self):
 		global AYAT
@@ -98,16 +107,16 @@ class MainGUI(QtGui.QMainWindow):
 		
 		print(Surat()+" "+Ayat())
 		self.scene.removeItem(self.scene.items()[0])
-		if (not self.image.load("/media/kentir1/Development/Ebook/quran/img/"+Surat()+"/"+Ayat())):
+		if (not self.image.load(QURANDIR+Surat()+"/"+Ayat())):
 			if (AYAT>0):
 				SURAT += 1
 				AYAT = 1
-				self.image.load("/media/kentir1/Development/Ebook/quran/img/"+Surat()+"/"+Ayat())
+				self.image.load(QURANDIR+Surat()+"/"+Ayat())
 			else:
 				SURAT -= 1
 				AYAT = 287 #--- todo AYAT yang paling belakang dengan cepat!
 				while (
-						(not self.image.load("/media/kentir1/Development/Ebook/quran/img/"+Surat()+"/"+Ayat()))
+						(not self.image.load(QURANDIR+Surat()+"/"+Ayat()))
 						and 
 						(AYAT>0)
 						):
