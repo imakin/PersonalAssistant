@@ -95,6 +95,7 @@ void tQuest_next_node(tQuest *self)
 					}
 				}
 			}
+			//TODO: save it in map
 			node = node->prev; //current pointer is empty
 			while (node!=NULL)
 			{
