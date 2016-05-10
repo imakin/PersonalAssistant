@@ -31,5 +31,8 @@ struct quest_st{
 void tQuest_init(tQuest *self);
 void tQuest_next_node(tQuest *self);
 
+/** color test for next node bullet to click */
+uint8_t tQuest_test_color(long color);
+
 #endif
 

@@ -15,21 +15,9 @@ void tQuest_next_node(tQuest *self)
 	int8_t step = 0;
 	long color;
 	int x,y;
-	POINT pos;//microsoft doc 
-	//~ pos = malloc(sizeof(POINT));
 	all_stop = 0;
-	long node_found = 0;
-	linkedlist *node, *map;
-	node = malloc(sizeof(linkedlist));
-	node->data1 = NULL;
-	node->data2 = NULL;
-	node->next = NULL;
-	node->prev = NULL;
 	
-	map = malloc(sizeof(linkedlist));
-	map->multinext = NULL;//malloc(3*sizeof(linkedlist*))
-	map->prev = NULL;
-	
+	printf("processing next node\n");
 	while (all_stop!=1)
 	{
 		while (all_stop!=1)
@@ -57,61 +45,54 @@ void tQuest_next_node(tQuest *self)
 			AU3_Send((lpcwstr)"J",0);
 			AU3_Sleep(200);
 			
-			AU3_ToolTip((lpcwstr)"I'm processing the possible node searching", 100, 100);
+			//~ AU3_ToolTip((lpcwstr)"I'm processing the possible node searching", 100, 100);
 			/* here we search for the next node button */
-			for (y=245; y<525; y+=5)
-			{
-				for (x=80;x<955; x+=5)
-				{
-					
-					color = AU3_PixelGetColor(x, y);
-					if (
-						   (color>0x002200)
-						&& ((color&0xff0000) == 0)
-						&& ((color&0x0000ff)==0x000000)
-					)
-					{
-						// only test if not the first occurence
-						if (node->prev!=NULL)
-						{
-							// test if node is already saved
-							if (abs(x-node->prev->data1)<70)
-							if (abs(y-node->prev->data2)<70)
-								continue;
-							//Following way is slower
-							/*if ( sqrt(
-									pow(y - node->prev->data2, 2)+
-									pow(x - node->prev->data1, 2)
-								) < 70)
-								continue;*/
-						}
-						
-						node->data1 = x;
-						node->data2 = y;
-						node->next = malloc(sizeof(linkedlist));
-						node->next->prev = node;
-						node = node->next;
-						node_found += 1;
-					}
-				}
+			///TODO: use threading, split screen area, and data association
+			///TODO: update threading to output all found occurence not only first occurence
+			free(pixelsearch_result);
+			pixelsearch_result = malloc(30*sizeof(uint32_t));
+			//part it from x100-950 y80-530
+			pixelsearch_param(param0, 0, 100+(283*0), 80+(150*0), 100+(283*1), 80+(150*1), &tQuest_test_color);
+			_beginthread(pixelsearch, 0, (void*)param0);
+			pixelsearch_param(param1, 1, 100+(283*1), 80+(150*0), 100+(283*2), 80+(150*1), &tQuest_test_color);
+			_beginthread(pixelsearch, 0, (void*)param1);
+			pixelsearch_param(param2, 2, 100+(283*2), 80+(150*0), 100+(283*3), 80+(150*1), &tQuest_test_color);
+			_beginthread(pixelsearch, 0, (void*)param2);
+			
+			pixelsearch_param(param3, 3, 100+(283*0), 80+(150*1), 100+(283*1), 80+(150*2), &tQuest_test_color);
+			_beginthread(pixelsearch, 0, (void*)param3);
+			pixelsearch_param(param4, 4, 100+(283*1), 80+(150*1), 100+(283*2), 80+(150*2), &tQuest_test_color);
+			_beginthread(pixelsearch, 0, (void*)param4);
+			pixelsearch_param(param5, 5, 100+(283*2), 80+(150*1), 100+(283*3), 80+(150*2), &tQuest_test_color);
+			_beginthread(pixelsearch, 0, (void*)param5);
+			
+			pixelsearch_param(param6, 6, 100+(283*0), 80+(150*2), 100+(283*1), 80+(150*3), &tQuest_test_color);
+			_beginthread(pixelsearch, 0, (void*)param6);
+			pixelsearch_param(param7, 7, 100+(283*1), 80+(150*2), 100+(283*2), 80+(150*3), &tQuest_test_color);
+			_beginthread(pixelsearch, 0, (void*)param7);
+			pixelsearch_param(param8, 8, 100+(283*2), 80+(150*2), 100+(283*3), 80+(150*3), &tQuest_test_color);
+			_beginthread(pixelsearch, 0, (void*)param8);
+			
+			while (1){
+				int i,j;
+				for (i=0;i<1000; i++)
+				for (j=0;j<1000; j++);
 			}
-			//TODO: save it in map
-			node = node->prev; //current pointer is empty
-			while (node!=NULL)
-			{
-				printf("found in (%d,%d)\n", node->data1, node->data2);
-				node = node->prev;
-			}
-			printf("\n%d \n", node_found);
-			return;
-			//~ if (AU3_error())
-				//~ AU3_PixelSearch(80,100, 957,530, 0x00e400, 0,1, pos);
-			//~ if (!AU3_error())
-				//~ break;
+			//~ while (pixelsearch_result_num==0)
+				//~ AU3_Sleep(100);
 		}
 		AU3_Send((lpcwstr)"J",0);
-		//~ AU3_MouseMove(pos.x, pos.y, 10);
-		//~ AU3_ToolTip((lpcwstr)"I will click this in 4", pos.x, pos.y);
 		return;
 	}
+}
+
+uint8_t tQuest_test_color(long color)
+{
+	if (
+		   (color>0x002200)
+		&& ((color&0xff0000)==0)
+		&& ((color&0x0000ff)==0)
+	)
+		return 1;
+	return 0;
 }
