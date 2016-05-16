@@ -59,5 +59,16 @@ uint8_t quest_testcolor_nodehousing(long color, long x, long y);
  * */
 uint8_t quest_test_explored(long x, long y);
 
+/**
+ * find nodes within given search rectangle
+ * by calling this function pixelsearch_result_num must be 1 and 
+ * pixelsearch_result only contains the mid node
+ * @param x1 region
+ * @param y1 region
+ * @param x2 region
+ * @param y2 region
+ * @return 0 if not found, 1 if found & explored, 2 if found & unexplored
+ */
+uint8_t quest_find_nodes(long x1, long y1, long x2, long y2);
 #endif
 

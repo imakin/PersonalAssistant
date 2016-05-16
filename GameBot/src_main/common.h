@@ -161,8 +161,8 @@ long color_hue(int r, int g, int b);
 
 
 /** log prints only if DEBUG is not 0 */
-#define DEBUG 1
+#define DEBUG 0
 /** log prints only if DEBUG is not 0 */
-#define printlog if(DEBUG) printf
+#define printlog if(DEBUG!=0) printf
 
 #endif
