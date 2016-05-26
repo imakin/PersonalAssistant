@@ -43,7 +43,7 @@ uint8_t pixelsearch_hdc_ready;
 
 FARPROC pGetPixel = 0;
 HINSTANCE hGDI = 0;
-HDC hdc = 0;
+//~ HDC hdc = 0;
 
 
 /**
@@ -62,7 +62,7 @@ HDC hdc = 0;
  * <li> index 6 will be the array/pointer where the value will be saved
  * 		it must be array of uint32_t which will save the position of saved</li>
  * 	this param will be freed upon the end of the process of this function
- */ 
+ */
 void pixelsearch(void *param)
 {
 	pixelsearch_jobs = pixelsearch_jobs + 1;
@@ -71,50 +71,94 @@ void pixelsearch(void *param)
 	test_method = data[6];
 	uint32_t x,y;
 	long color;
+	
+	#define MAX_WIDTH data[3]
+	#define MAX_HEIGHT data[4]
 	COLORREF color_dword;
+	HDC hdc_optimized, _hdc;
+	LPRGBQUAD bitPointer;
+	BITMAPINFO bitmap;
+	HBITMAP hBitmap2;
+	HBITMAP hbmpOld;
 	
-	if (pixelsearch_hdc_ready==0)
-	{
-		pixelsearch_hdc_ready=1;
-		printlog("#%d calling to initialize hdc\n", data[0]);
-		if (!hGDI) {
-			hGDI = LoadLibrary("gdi32.dll");
-			if (!hGDI) {
-				printlog("Team fall back! no gdi32 library found!\n");
-				return;
-			}
-			pGetPixel = GetProcAddress(hGDI, "GetPixel");
-		}
-		else
-		{
-			printlog("#%d gdi32.dll has been loaded\n", data[0]);
-		}
-		
-		printlog("#%d go\n", data[0]);
-		pixelsearch_hdc_ready = 2;
-	}
-	else
-	{
-		printlog(
-			"#%d yes sir, process will be held!\n", 
-			data[0]
-		);
-		while (pixelsearch_hdc_ready!=2);
-		printlog("#%d roger that\n", data[0]);
-	}
 	
-	HDC _hdc = GetDC(NULL);
+	//~ if (pixelsearch_hdc_ready==0)
+	//~ {
+		//~ pixelsearch_hdc_ready=1;
+		//~ printlog("#%d calling to initialize hdc\n", data[0]);
+		//~ if (!hGDI) {
+			//~ hGDI = LoadLibrary("gdi32.dll");
+			//~ if (!hGDI) {
+				//~ printlog("Team fall back! no gdi32 library found!\n");
+				//~ return;
+			//~ }
+			//~ pGetPixel = GetProcAddress(hGDI, "GetPixel");
+		//~ }
+		//~ else
+		//~ {
+			//~ printlog("#%d gdi32.dll has been loaded\n", data[0]);
+		//~ }
+		//~ 
+		//~ printlog("#%d go\n", data[0]);
+		//~ pixelsearch_hdc_ready = 2;
+	//~ }
+	//~ else
+	//~ {
+		//~ printlog(
+			//~ "#%d yes sir, process will be held!\n", 
+			//~ data[0]
+		//~ );
+		//~ while (pixelsearch_hdc_ready!=2);
+		//~ printlog("#%d roger that\n", data[0]);
+	//~ }
+	
+	_hdc = GetDC(NULL);
 	if (!_hdc) {
-		printlog("#%d fall back! Can't get Device Context!\n", data[0]);
+			printlog("#%d fall back! Can't get Device Context!\n", data[0]);
 		return;
 	}
 	
+	//- optimize
+	hdc_optimized = CreateCompatibleDC(_hdc);
 	
+	bitmap.bmiHeader.biSize = sizeof(bitmap.bmiHeader);
+	bitmap.bmiHeader.biWidth = MAX_WIDTH;
+	bitmap.bmiHeader.biHeight = -MAX_HEIGHT;
+	bitmap.bmiHeader.biPlanes = 1;
+	bitmap.bmiHeader.biBitCount = 32;
+    bitmap.bmiHeader.biCompression = BI_RGB;
+    bitmap.bmiHeader.biSizeImage = 0;MAX_WIDTH * 4 * MAX_HEIGHT;
+    bitmap.bmiHeader.biClrUsed = 0;
+    bitmap.bmiHeader.biClrImportant = 0;
+	hBitmap2 = CreateDIBSection(
+							hdc_optimized, &bitmap, DIB_RGB_COLORS,
+							(void**)(&bitPointer), NULL, NULL);
+	hbmpOld = (HBITMAP) SelectObject(hdc_optimized, hBitmap2);
+	BitBlt(hdc_optimized, 0,0, MAX_WIDTH, MAX_HEIGHT, _hdc, 0,0, SRCCOPY); 
+	
+	int i;
 	for (y=data[2]; y<data[4]; y+= pixelsearch_skip){
 	for (x=data[1]; x<data[3]; x+= pixelsearch_skip)
+	//~ for (i = 0; i<(MAX_WIDTH * MAX_HEIGHT); i+=1)
+	//~ {
 	{
 		//~ color = AU3_PixelGetColor((long)x, (long)y);
-		color = (long)(*pGetPixel)(_hdc, (int)x, (int)y);
+		//~ color = (long)(*pGetPixel)(_hdc, (int)x, (int)y);
+		//~ x =  i / (1*MAX_HEIGHT);
+		//~ y =  i / (1*MAX_WIDTH);
+
+		
+		LPRGBQUAD hex_color = &bitPointer[(MAX_WIDTH*y)+x];
+		color = (long)(
+				((hex_color->rgbBlue)<<16) |
+				((hex_color->rgbGreen)<<8) |
+				(hex_color->rgbRed)
+			);
+			
+		wchar_t t[100];
+		wsprintfW(t, L"(%d,%d): %d, %d, %d\0", x,y,hex_color->rgbRed, hex_color->rgbGreen,hex_color->rgbRed);
+		AU3_ToolTip((LPCWSTR)t, 100,100);
+		
 		if (test_method((long)color, (long)x, (long)y))
 		{
 			while(pixelsearch_result_lock==1);
@@ -124,6 +168,7 @@ void pixelsearch(void *param)
 				printlog("#%d maximum result has reached\n", data[0]);
 				pixelsearch_result_lock = 0;
 				
+				ReleaseDC(NULL, hdc_optimized);
 				ReleaseDC(NULL, _hdc);
 				free(data);
 				pixelsearch_jobs = pixelsearch_jobs - 1;
@@ -145,6 +190,7 @@ void pixelsearch(void *param)
 					skip = 1;
 				}
 			}
+			
 			if(skip==0)
 			{
 				pixelsearch_result[pixelsearch_result_num] = 
@@ -155,6 +201,7 @@ void pixelsearch(void *param)
 				{
 					pixelsearch_result_lock = 0;
 
+					ReleaseDC(NULL, hdc_optimized);
 					ReleaseDC(NULL, _hdc);
 					free(data);
 					pixelsearch_jobs = pixelsearch_jobs - 1;
@@ -166,10 +213,16 @@ void pixelsearch(void *param)
 			pixelsearch_result_lock = 0;
 		}
 	}
-	printlog("#%d reached %d  (%d%%)\n", data[0], y, (((y-data[2])*100)/(data[4]-data[2])));}
+	//~ printlog("#%d reached %d  (%d%%)\n", data[0], y, (((y-data[2])*100)/(data[4]-data[2])));
+	}
 	printlog("#%d fuck this shit! i'm out\n", data[0]);
 	//~ free(data[6]);
 	printlog("total found %d \n", pixelsearch_result_num);
+	
+	SelectObject(hdc_optimized, hbmpOld);
+	DeleteObject(hBitmap2);
+	DeleteDC(hdc_optimized);
+	//~ ReleaseDC(NULL, hdc_optimized);
 	ReleaseDC(NULL, _hdc);
 	free(data);
 	pixelsearch_jobs = pixelsearch_jobs - 1;

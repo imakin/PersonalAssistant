@@ -3,46 +3,43 @@
 #include "../lib/AutoIt3.h"
 #include "quest.h"
 
+
+uint8_t aaaaaa(long color, long x, long y)
+{
+	if (color==0xFFFFFF)
+		return 1;
+	//~ wchar_t t[100];
+	//~ wsprintfW(t, L"%d now in %d,%d\0", color, x,y);
+	//~ AU3_Sleep(2000);
+	//~ AU3_ToolTip((LPCWSTR)t, 100,100);
+	//~ AU3_Send((lpcwstr)"H",0);
+	//~ AU3_Send((lpcwstr)t,0);
+	
+	//~ if (color==
+		//~ AU3_MouseMove(x, y, 10);
+	return 0;
+}
+
 int APIENTRY WinMain(HINSTANCE hInstance,
                      HINSTANCE hPrevInstance,
                      LPSTR     lpCmdLine,
                      int       nCmdShow)
 {
+//~ int main(int argc, char *argv[])
+//~ {
+	AllocConsole();
+	//~ AU3_MouseMove(100,100, 10);
+	//~ AU3_Sleep(3000);
+	//~ 
+	//~ pixelsearch_nothread(my, 0,0,110,110, &aaaaaa, PIXELSEARCH_FLAG_EXITONFOUND);
+	//~ while(1);
+	//~ return 0;
 	
-	//~ FARPROC pGetPixel;
-//~ 
-	//~ HINSTANCE _hGDI = LoadLibrary("gdi32.dll");
-	//~ if(_hGDI)
-	//~ {
-		//~ pGetPixel = GetProcAddress(_hGDI, "GetPixel");
-		//~ HDC _hdc = GetDC(NULL);
-		//~ if(_hdc)
-		//~ {
-			//~ int i;
-			//~ int _red;
-			//~ int _green;
-			//~ int _blue;
-			//~ COLORREF _color;
-			//~ 
-				//~ _color = (*pGetPixel) (_hdc, 20 ,20);
-//~ 
-				//~ _red = GetRValue(_color);
-				//~ _green = GetGValue(_color);
-				//~ _blue = GetBValue(_color);
-//~ 
-			//~ ReleaseDC(NULL, _hdc);    
-			//~ printlog("col %d, Red: %d, Green: %d, Blue: %d", _color, _red, _green, _blue);
-		//~ }
-		//~ FreeLibrary(_hGDI);
-	//~ }
-	
+	printf("hahaha\n");
 	AU3_Init();
 	AU3_Sleep(1000);
 	Quest_new(Quest);
 	Quest->next_node(Quest);
-	//~ get_pixel_color(
-	
-	//_beginthread( threadtest2, 0, NULL );
 	while(1){}
 	
 	return 0;

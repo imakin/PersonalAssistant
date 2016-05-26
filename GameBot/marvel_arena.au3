@@ -219,19 +219,23 @@ Func findMatch()
    Sleep(3000)
    Send("0")
    $c = PixelGetColor(841,574)
-   Local $t = 0
-   Local $cont = 1
-   Do
-	  Sleep(500)
-	  if ($t>120) Then
-		 ;stuck
-		 $cont = 0
-	  EndIf
-	  if (Not(PixelGetColor(841,574)==$c)) Then
-		 $cont = 0
-	  EndIf
-	  $t = $t+1
-   Until ($cont==0)
+   if (GetDominantColor($c)=="green") Then
+	  Sleep(3000)
+   Else
+	  Local $t = 0
+	  Local $cont = 1
+	  Do
+		 Sleep(500)
+		 if ($t>120) Then
+			;stuck
+			$cont = 0
+		 EndIf
+		 if (Not(PixelGetColor(841,574)==$c)) Then
+			$cont = 0
+		 EndIf
+		 $t = $t+1
+	  Until ($cont==0)
+   EndIf
 EndFunc
 
 ;Fight in arena

@@ -6,7 +6,7 @@ CFLAGS   = --enable-stdcall-fixup
 
 #bellow is the dll path and name
 LDFLAGS  = -L./lib/
-INCLUDE = -lAutoItX3
+INCLUDE = -lAutoItX3 -mwindows
 
 #bellow is the source folder
 SRC_MAIN = src_main

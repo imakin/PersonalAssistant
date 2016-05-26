@@ -60,7 +60,7 @@ extern uint8_t pixelsearch_hdc_ready;
 
 extern FARPROC pGetPixel;
 extern HINSTANCE hGDI;
-extern HDC hdc;
+//~ extern HDC hdc;
 
 
 /**
@@ -75,7 +75,10 @@ extern HDC hdc;
  */ 
 void pixelsearch(void *param);
 
-
+/** if pixelsearch_result not set, initialize result to default 30 size */
+#define pixelsearch_init_result() \ 
+	if (pixelsearch_result==NULL) \
+		pixelsearch_result = malloc(30*sizeof(uint32_t));
 
 #define PIXELSEARCH_FLAG_DEFAULT 0
 #define PIXELSEARCH_FLAG_EXITONFOUND 1
@@ -90,7 +93,8 @@ void pixelsearch(void *param);
  * @param y2 the area to search rectangle y2
  * @param test_color the pointer to method for the color test to search
  * 		this might be defined in uint8_t test_methodname(long color)
- * 		and must return 1 if color match desired color, or return 0 if not
+ * 		and must return 1 if color match desired color, or return 0 if not.
+ * 		color is long with per 8 bit is in order of BGR.
  * @param flag searching option flags (set / reset). LSB is bit0 MSB is bit31
  * 		bit 0: exit on first found
  * 
@@ -123,6 +127,7 @@ void pixelsearch(void *param);
  * 		bit 0: exit on first found
  */
 #define pixelsearch_thread(name, thread_id, x1,y1, x2,y2, test_color, flag) \
+	pixelsearch_init_result(); \
 	pixelsearch_param(name, thread_id, x1,y1, x2,y2, test_color, flag); \
 	_beginthread(pixelsearch, 0, (void*)name);
 
@@ -143,6 +148,7 @@ void pixelsearch(void *param);
  * 		bit 0: exit on first found
  */
 #define pixelsearch_nothread(name, x1,y1, x2,y2, test_color, flag) \
+	pixelsearch_init_result(); \
 	pixelsearch_param(name, 99, x1,y1, x2,y2, test_color, flag); \
 	pixelsearch((void*)name);
 

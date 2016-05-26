@@ -183,7 +183,7 @@ uint8_t quest_testcolor_nodemid(long color, long x, long y)
 				return 0;
 		printlog("sat : %d, %d\n", (((g-r)*100/g)), (((b-r)*100/b)));
 		
-		AU3_MouseMove(x,y,10);
+		//~ AU3_MouseMove(x,y,10);
 		int found=pixelsearch_result_num;
 		//NEXT CHECK
 		pixelsearch_skip = 3;
