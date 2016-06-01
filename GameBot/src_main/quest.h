@@ -5,6 +5,7 @@
 #ifndef __QUEST_H__
 #define __QUEST_H__
 
+#include "imageprocess.h"
 #include "common.h"
 
 typedef struct quest_st tQuest;

@@ -24,10 +24,12 @@ int APIENTRY WinMain(HINSTANCE hInstance,
                      HINSTANCE hPrevInstance,
                      LPSTR     lpCmdLine,
                      int       nCmdShow)
-{
 //~ int main(int argc, char *argv[])
-//~ {
+{
 	AllocConsole();
+	freopen("CONOUT$", "w", stdout);
+	printf("HAI");
+	//~ freopen("CONIN$", "r", stdin);
 	//~ AU3_MouseMove(100,100, 10);
 	//~ AU3_Sleep(3000);
 	//~ 
@@ -35,12 +37,14 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	//~ while(1);
 	//~ return 0;
 	
-	printf("hahaha\n");
-	AU3_Init();
-	AU3_Sleep(1000);
+	//~ printf("hahaha\n");
+	//~ AU3_Init();
+	
+	AU3_Sleep(5000);
 	Quest_new(Quest);
 	Quest->next_node(Quest);
-	while(1){}
+	AU3_Sleep(10000);
+	//~ while(1){}
 	
 	return 0;
 }

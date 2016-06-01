@@ -57,16 +57,42 @@ void tQuest_next_node(tQuest *self)
 			
 			pixelsearch_skip = 5;
 			pixelsearch_node_range_min = 50;
-			pixelsearch_nothread(
-					mysearch,
-					//~ 0,
-					//~ 430,270,
-					//~ 540,340,
-					474,292,
-					502,314,
-					&quest_testcolor_nodemid,
-					PIXELSEARCH_FLAG_EXITONFOUND
+			
+			pixelsearch_result_num = 0;
+			while (1)
+			{
+				pixelsearch_nothread(
+					greensearch,
+					80,100,
+					957, 530,
+					&quest_testcolor_nodegreen,
+					PIXELSEARCH_FLAG_DEFAULT
 				);
+			int iii;
+			//~ while(1){
+				for (iii=0;iii<pixelsearch_result_num;iii++)
+				{
+					AU3_MouseMove(
+								(long)(pixelsearch_result[iii]>>16),
+								(long)(pixelsearch_result[iii]&0x0000ffff),
+								10
+							);
+					AU3_Sleep(2000);
+				}
+			}
+			while(pixelsearch_result_num==0){
+				printlog("redo the midnode search\n");
+				pixelsearch_nothread(
+						mysearch,
+						//~ 0,
+						//~ 430,270,
+						//~ 540,340,
+						474,292,
+						502,314,
+						&quest_testcolor_nodemid,
+						PIXELSEARCH_FLAG_EXITONFOUND
+					);
+			}
 			
 			//we can assume there only 1 found for mid node
 			AU3_MouseMove(
@@ -77,38 +103,67 @@ void tQuest_next_node(tQuest *self)
 			long midx, midy;
 			midx = pixelsearch_result[0]>>16;
 			midy = (long)(pixelsearch_result[0]&0x0000ffff);
-			
+			uint8_t found;
 			pixelsearch_skip = 1;
 			printlog("search node North\n");
-			printf("found status %d\n",
-				quest_find_nodes(midx-15, midy-60,
-							midx+15, midy-58)
-			);
-			
-			printlog("search node North East\n");
-			printf("found status %d\n",
-				quest_find_nodes(midx+50, midy-45,
-							midx+60, midy-30)
-			);
-			
-			printlog("search node East\n");
-			printf("found status %d\n",
-				quest_find_nodes(midx+58, midy-15,
-							midx+60, midy+15)
-			);
+			//~ printlog("found status %d\n",
+				//~ found = quest_find_nodes(midx-15, midy-60,
+							//~ midx+15, midy-58)
+			//~ );
+			pixelsearch_node_range_min = 10;
+			int clockdeg = 0;
+			double cosd,sind;
+			double pi = 3.1415926;
+			for (clockdeg = 0; clockdeg<360; clockdeg +=45)
+			{	// clockwise, from clock 3, to 6, 9, 12
+				switch(clockdeg){
+					case 360:
+					case 0:
+						found = quest_find_nodes(
+								midx+40, midy-10,
+								midx+60, midy+10
+							);
+						break;
+					case 45:
+						found = quest_find_nodes(
+								midx+40, midy+20,
+								midx+60, midy+40
+							);
+						break;
+					case 90:
+						found = quest_find_nodes(
+								midx-10, midy+40,
+								midx+10, midy+60
+							);
+						break;
+					case (90+45):
+						found = quest_find_nodes(
+								midx-60, midy+20,
+								midx-40, midy+40
+							);
+						break;
+					case 180:
+						found = quest_find_nodes(
+								midx-60, midy-10,
+								midx-40, midy+10
+							);
+						break;
+					case (180+45):
+						found = quest_find_nodes(
+								midx-60, midy-40,
+								midx-40, midy-20
+							);
+						break;
+					default:
+						break;
+				}
+				
+				if (found==1)
+					printlog("found in, explored\n");
+				else if (found==2)
+					printlog("found in, unxeplored\n");
 
-			printlog("search node SouthEast\n");
-			printf("found status %d\n",
-				quest_find_nodes(midx+30, midy+50,
-							midx+45, midy+60)
-			);
-
-			printlog("search node South\n");
-			printf("found status %d\n",
-				quest_find_nodes(midx-15, midy+58,
-							midx+15, midy+60)
-			);
-			
+			}
 			
 			while(1){
 				AU3_Sleep(1000);
@@ -126,13 +181,17 @@ void tQuest_next_node(tQuest *self)
  * @param y test position */
 uint8_t quest_testcolor_nodegreen(long color, long x, long y)
 {
-	if (
-		   (color>0x002200)
-		&& ((color&0xff0000)==0)
-		&& ((color&0x0000ff)==0)
-	)
+	//~ if (
+		   //~ (color>0x002200)
+		//~ && ((color&0xff0000)==0)
+		//~ && ((color&0x0000ff)==0)
+	//~ )
+		//~ return 1;
+	//~ return 0;
+	if (color==0x00f800 || color==0x00e400)
 		return 1;
 	return 0;
+		
 }
 
 
@@ -290,7 +349,7 @@ uint8_t quest_test_explored(long x, long y)
 		{
 			return 0;
 		}	
-		AU3_Sleep(10);
+		AU3_Sleep(50);
 	}
 	return 1;
 }
@@ -309,7 +368,8 @@ uint8_t quest_test_explored(long x, long y)
 uint8_t quest_find_nodes(long x1, long y1, long x2, long y2)
 {
 	int tries = 3;
-	while (tries>0 && pixelsearch_result_num<2)
+	int orig_result = pixelsearch_result_num;
+	while (tries>0 && pixelsearch_result_num==orig_result)
 	{
 		pixelsearch_nothread(
 						mypath,
@@ -320,19 +380,22 @@ uint8_t quest_find_nodes(long x1, long y1, long x2, long y2)
 					);
 		tries-=1;
 	}
-	if (pixelsearch_result_num>1)
+	if (pixelsearch_result_num>orig_result)
 	{
-		pixelsearch_result_num = 1;//reset
 		AU3_MouseMove(
-					(long)(pixelsearch_result[1]>>16),
-					(long)(pixelsearch_result[1]&0x0000ffff),
+					(long)(pixelsearch_result[pixelsearch_result_num-1]>>16),
+					(long)(pixelsearch_result[pixelsearch_result_num-1]&0x0000ffff),
 					10
 				);
 		if (quest_test_explored(
-					(long)(pixelsearch_result[1]>>16),
-					(long)(pixelsearch_result[1]&0x0000ffff)
+					(long)(pixelsearch_result[pixelsearch_result_num-1]>>16),
+					(long)(pixelsearch_result[pixelsearch_result_num-1]&0x0000ffff)
 				))
+		{
+			pixelsearch_result_num = orig_result;
 			return 1;
+		}
+		pixelsearch_result_num = orig_result;
 		return 2;
 	}
 	else

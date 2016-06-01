@@ -75,6 +75,7 @@ EndFunc
 Func startArena()
    $allstop = 0
    Do
+	  calibrateWindow()
 	  Sleep(500)
 	  MouseClickDrag("left", 130, 255, 700, 255);drag left mosst for foolproof
 	  Sleep(1000)
@@ -82,7 +83,12 @@ Func startArena()
 	  if (Not(getDominantColor(PixelGetColor(346,535))=="green")) Then
 		 MsgBox(0, "fight", "inside fight, not arena", 1)
 		 MouseClick("left", 500,446)
-		 Sleep(5000)
+		 Sleep(2000)
+		 Local $wait = 0
+		 do
+			Sleep(1000)
+			$wait = $wait+1
+		 Until (getDominantColor(PixelGetColor(435,525))=="green" OR ($wait>20))
 	  EndIf
 	  if ($arena_tier==2) Then
 		 ;Send("9")
@@ -457,6 +463,27 @@ Func fight()
 			;Send("J")
 		 EndIf
 	  EndIf
+	  ;quest completed!
+	  Local $ca = PixelGetColor(204,190)
+	  Local $cb = PixelGetColor(739,514)
+	  if ($ca==0x2b2c30) Then
+			if ($cb==0x2b2c30) Then
+			   $stop = 1
+			   Sleep(7000)
+			   MsgBox(0,"finished", "finished", 2)
+			   MouseClick("left", 300,475);back to quest button
+			   Sleep(15000)
+			   
+			   MsgBox(0,"arena", "my creator is away, i'll continue to arena to kill the time",2)
+			   MouseClick("left", 148, 58) ;menu
+			   Sleep(2000)
+			   MouseClick("left", 148, 58) ;menu
+			   Sleep(2000)
+			   MouseClick("left", 270, 132) ;fight
+			   Sleep(15000)
+			   startArena()
+			EndIf
+	  EndIf
    Until ($stop==1 or $allstop==1)
 EndFunc
 
@@ -490,6 +517,8 @@ Func nextNode()
 	  MouseMove($greendot[0], $greendot[1])
 	  MsgBox(0, "now", "i will click this in 4s", 1)
 	  Sleep(4000)
+	  MouseClick("left", $greendot[0], $greendot[1])
+	  Sleep(500)
 	  MouseClick("left", $greendot[0], $greendot[1])
 	  Sleep(10000)
 	  fight()
