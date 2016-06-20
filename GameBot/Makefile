@@ -5,7 +5,7 @@ EXE = makinplayer
 CFLAGS   = --enable-stdcall-fixup
 
 #bellow is the dll path and name
-LDFLAGS  = -L./lib/
+LDFLAGS  = -L./lib/new/
 INCLUDE = -lAutoItX3 -mwindows
 
 #bellow is the source folder

@@ -5,9 +5,17 @@
 
 #include "quest.h"
 
+linkedlist* node_stack;
+uint8_t node_stack_step = 0;
+
 void tQuest_init(tQuest *self)
 {
 	self->next_node = &tQuest_next_node;
+	
+	//prepare memory to save the result
+	free(pixelsearch_result);
+	pixelsearch_result = malloc(30*sizeof(uint32_t));
+	node_stack = linkedlist_new(node_stack);
 }
 
 void tQuest_next_node(tQuest *self)
@@ -16,51 +24,21 @@ void tQuest_next_node(tQuest *self)
 	long color;
 	int x,y;
 	all_stop = 0;
+
 	
 	printlog("processing next node\n");
 	while (all_stop!=1)
 	{
 		while (all_stop!=1)
 		{
-			/*step += 1;
-			if (step==10)
-			{
-				AU3_MouseClickDrag((lpcwstr)"left", 450, 320, 642, 346, 10);
-			}
-			else if (step==20)
-			{
-				AU3_MouseClickDrag((lpcwstr)"left", 450, 320, 200, 200, 10);
-				AU3_MouseClickDrag((lpcwstr)"left", 450, 320, 300, 300, 10);
-			}
-			else if (step==30)
-			{
-				AU3_MouseClickDrag((lpcwstr)"left", 700, 100, 100, 400, 10);
-			}
-			else if (step>=40)
-			{
-				AU3_MouseClickDrag((lpcwstr)"left", 100, 400, 700, 100, 10);
-				AU3_MouseClickDrag((lpcwstr)"left", 100, 400, 700, 100, 10);
-				step = 0;
-			}
-			AU3_Send((lpcwstr)"J",0);
-			AU3_Sleep(200);*/
-			
-			/* here we search for the next node button */
-			
-			//TODO: NOt bruteforce search but start looking at current node and its white link instead 
-			// for faster performance
-			
-			//prepare memory to save the result
-			free(pixelsearch_result);
-			pixelsearch_result = malloc(30*sizeof(uint32_t));
-			
-			
-			pixelsearch_skip = 5;
+			//settings
+			pixelsearch_skip = 3;
 			pixelsearch_node_range_min = 50;
-			
 			pixelsearch_result_num = 0;
-			while (1)
+			int tries;
+			for (tries=0;tries<1; tries++)
 			{
+				pixelsearch_refresh_image();
 				pixelsearch_nothread(
 					greensearch,
 					80,100,
@@ -68,107 +46,51 @@ void tQuest_next_node(tQuest *self)
 					&quest_testcolor_nodegreen,
 					PIXELSEARCH_FLAG_DEFAULT
 				);
+			}
 			int iii;
-			//~ while(1){
-				for (iii=0;iii<pixelsearch_result_num;iii++)
-				{
-					AU3_MouseMove(
-								(long)(pixelsearch_result[iii]>>16),
-								(long)(pixelsearch_result[iii]&0x0000ffff),
-								10
-							);
-					AU3_Sleep(2000);
-				}
-			}
-			while(pixelsearch_result_num==0){
-				printlog("redo the midnode search\n");
-				pixelsearch_nothread(
-						mysearch,
-						//~ 0,
-						//~ 430,270,
-						//~ 540,340,
-						474,292,
-						502,314,
-						&quest_testcolor_nodemid,
-						PIXELSEARCH_FLAG_EXITONFOUND
+			//~ char *buff = malloc(sizeof(char)*64);
+			char buff[64];
+			char *buff_nodes = malloc(sizeof(char)*100);
+			buff_nodes[0] = 0;
+			for (iii=0;iii<pixelsearch_result_num;iii++)
+			{
+				sprintf(buff, "%d_", pixelsearch_result[iii]
 					);
-			}
-			
-			//we can assume there only 1 found for mid node
-			AU3_MouseMove(
-							(long)(pixelsearch_result[0]>>16),
-							(long)(pixelsearch_result[0]&0x0000ffff),
+				strcat(buff_nodes, buff);
+				AU3_MouseMove(
+							(long)(pixelsearch_result[iii]>>16),
+							(long)(pixelsearch_result[iii]&0x0000ffff),
 							10
 						);
-			long midx, midy;
-			midx = pixelsearch_result[0]>>16;
-			midy = (long)(pixelsearch_result[0]&0x0000ffff);
-			uint8_t found;
-			pixelsearch_skip = 1;
-			printlog("search node North\n");
-			//~ printlog("found status %d\n",
-				//~ found = quest_find_nodes(midx-15, midy-60,
-							//~ midx+15, midy-58)
-			//~ );
-			pixelsearch_node_range_min = 10;
-			int clockdeg = 0;
-			double cosd,sind;
-			double pi = 3.1415926;
-			for (clockdeg = 0; clockdeg<360; clockdeg +=45)
-			{	// clockwise, from clock 3, to 6, 9, 12
-				switch(clockdeg){
-					case 360:
-					case 0:
-						found = quest_find_nodes(
-								midx+40, midy-10,
-								midx+60, midy+10
-							);
-						break;
-					case 45:
-						found = quest_find_nodes(
-								midx+40, midy+20,
-								midx+60, midy+40
-							);
-						break;
-					case 90:
-						found = quest_find_nodes(
-								midx-10, midy+40,
-								midx+10, midy+60
-							);
-						break;
-					case (90+45):
-						found = quest_find_nodes(
-								midx-60, midy+20,
-								midx-40, midy+40
-							);
-						break;
-					case 180:
-						found = quest_find_nodes(
-								midx-60, midy-10,
-								midx-40, midy+10
-							);
-						break;
-					case (180+45):
-						found = quest_find_nodes(
-								midx-60, midy-40,
-								midx-40, midy-20
-							);
-						break;
-					default:
-						break;
-				}
-				
-				if (found==1)
-					printlog("found in, explored\n");
-				else if (found==2)
-					printlog("found in, unxeplored\n");
-
+				AU3_Sleep(2000);
 			}
+			printlog(buff_nodes);
+			if (pixelsearch_result_num>1)
+				cloud_data_write("multiplenextnode", buff_nodes);
+			free(buff_nodes);
 			
-			while(1){
+			long action;
+			uint8_t found=0;
+			while (found!=1) {
+				action = (long)atoi(cloud_data_read("multiplenextnode_pick"));
+				for (iii=0;iii<pixelsearch_result_num;iii++)
+				{
+					if (action==pixelsearch_result[iii]){
+						found=1;
+						break;
+					}
+				}
 				AU3_Sleep(1000);
 			}
-			
+			printlog("\nordered to go %x: (%d,%d)\n", action, action>>16, action&0x0000ffff);
+			//~ free(buff);
+			AU3_MouseMove(action>>16, action&0x0000ffff, 10);
+			printlog("will click this in 4 seconds\n");
+			AU3_Sleep(4000);
+			AU3_MouseClick((lpcwstr)"LEFT", (long)(action>>16), (long)(action&0x0000ffff), 10, -1);
+			exec("click.exe");
+			printlog("clicked\n");
+			AU3_Sleep(1000);
 		}
 		AU3_Send((lpcwstr)"J",0);
 		return;
@@ -181,16 +103,18 @@ void tQuest_next_node(tQuest *self)
  * @param y test position */
 uint8_t quest_testcolor_nodegreen(long color, long x, long y)
 {
-	//~ if (
-		   //~ (color>0x002200)
-		//~ && ((color&0xff0000)==0)
-		//~ && ((color&0x0000ff)==0)
-	//~ )
-		//~ return 1;
-	//~ return 0;
-	if (color==0x00f800 || color==0x00e400)
+	if (
+		   (color>0x002200)
+		&& ((color&0xff0000)==0)
+		&& ((color&0x0000ff)==0)
+	)
 		return 1;
 	return 0;
+	//~ if (color==0x00f800 || color==0x00e400){
+		//~ printlog("found color is %x ",color);
+		//~ return 1;
+	//~ }
+	//~ return 0;
 		
 }
 

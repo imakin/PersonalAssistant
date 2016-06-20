@@ -8,6 +8,15 @@
 #include "imageprocess.h"
 #include "common.h"
 
+extern linkedlist* node_stack;
+extern uint8_t node_stack_step;
+
+//the index of data in node_stack->data
+/** what lvl is this node */
+#define NODE_STACK_DATA_STEP 0
+/** list all next nodes of this node */
+#define NODE_STACK_DATA_NEXTNODES NODE_STACK_DATA_STEP+1
+
 typedef struct quest_st tQuest;
 struct quest_st{
 	/**
@@ -25,7 +34,7 @@ struct quest_st{
  * @param name the name of object to be created
  */
 #define Quest_new(name)\
-	tQuest *name = malloc(sizeof(tQuest)); \
+    tQuest *name = (tQuest*)malloc(sizeof(tQuest)); \
 	name->init = &tQuest_init; \
 	name->init(name);
 
