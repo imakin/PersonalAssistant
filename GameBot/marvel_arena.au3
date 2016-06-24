@@ -6,10 +6,13 @@ HotKeySet("+!d", "fight")
 HotKeySet("+!f", "findMatch")
 HotKeySet("+!g", "nextNode")
 HotKeySet("+!h", "fightArena")
+HotKeySet("+!q", "Duel")
 HotKeySet("+!p", "playthegame")
 HotKeySet("+!c", "calibrateWindow")
+HotKeySet("+!i", "showStatus")
 
 
+Global $status="ngondek"
 Global $savepixel = 0
 Global $screensave[6]
 $screensave[0] = 0
@@ -27,8 +30,13 @@ Do
    Sleep(1)
 Until False
 
+Func showStatus()
+   ToolTip(StringFormat("%s", $status),0,0)
+EndFunc
+
 
 Func idle()
+   $status = "idle"
    $allstop = 1
    MsgBox(0, "now", "terminated", 1)
    Do
@@ -76,6 +84,7 @@ EndFunc
 
 ;Starts the arena (Fight menu), and continue (tier *2)
 Func startArena()
+   $status = "start arena"
    $allstop = 0
    Do
 	  calibrateWindow()
@@ -89,6 +98,8 @@ Func startArena()
 		 Sleep(500)
 	  Else
 		 MouseClickDrag("left", 130, 255, 700, 255);drag left mosst for foolproof
+		 Sleep(500)
+		 MouseClickDrag("left", 130, 255, 700, 255);drag left mosst for foolproof
 	  EndIf
 	  Sleep(1000)
 	  
@@ -96,6 +107,8 @@ Func startArena()
 	  
 	  if (Not(getDominantColor(PixelGetColor(346,535))=="green") AND (Not($arena_tier==5))) Then
 		 MsgBox(0, "fight", "inside fight menu, not arena", 1)
+		 MouseClickDrag("left", 130, 255, 700, 255);drag left mosst for foolproof
+		 Sleep(400)
 		 MouseClick("left", 500,446)
 		 Sleep(2000)
 		 Local $wait = 0
@@ -180,6 +193,7 @@ Func startArena()
 EndFunc
 
 Func askForHelp()
+   $status = "ask for help"
    Local $carryon = 1
    Do
 	  ;Detect if we can ask for help
@@ -252,6 +266,7 @@ EndFunc
 
 ;arena
 Func addToTeam()
+   $status = "add to team"
    MouseClickDrag("left", 319, 235, 145, 135)
    sleep(500)
    MouseClickDrag("left", 319, 235, 145, 210)
@@ -262,6 +277,7 @@ EndFunc
 
 ;Arena
 Func findMatch()
+   $status = "find match"
    Sleep(500)
    MouseClick("left", 109, 547)
 		 
@@ -311,6 +327,7 @@ EndFunc
 
 ;Fight in arena
 Func fightArena()
+   $status = "fight arena"
    $seq = 0
    $stop = 0
    $allstop = 0
@@ -323,6 +340,7 @@ Func fightArena()
    Do
 	  $stuckseq = $stuckseq+1
 	  if (Mod($stuckseq,400)==0) Then
+		 $stuqseq = 1
 		 ;ToolTip("check stuck")
 		 if (checkStuck()) Then
 			updateCapture()
@@ -341,7 +359,7 @@ Func fightArena()
 			MouseClick("left", 148, 58) ;menu
 			Sleep(2000)
 			MouseClick("left", 270, 132) ;fight
-			
+
 			
 			Sleep(10000)
 		 EndIf
@@ -402,6 +420,12 @@ Func fightArena()
 			Sleep(1000)
 			MouseClick("left", 943, 52); close
 			Sleep(2000)
+			MouseClick("left", 148, 58) ;menu
+			Sleep(1000)
+			MouseClick("left", 138, 58) ;menu double
+			Sleep(1000)
+			MouseClick("left", 270, 132) ;fight
+			Sleep(5000)
 		 EndIf
 	  EndIf
 	  
@@ -728,4 +752,96 @@ Func isInsideFight()
 	  EndIf
    EndIf
    return 0
+EndFunc
+
+
+Func Duel()
+   Local $count=5;Limit count here
+   Do
+	  MouseClick("left", 276,97)
+	  Sleep(1000)
+	  Send("rooster 210");name to search
+	  Sleep(1000)
+	  MouseClick("left", 772,102)
+	  Sleep(5000)
+	  
+	  ;2nd search position
+		 MouseClick("left", 286,246)
+		 Sleep(1000)
+		 MouseClick("left", 445,246)
+		 Sleep(4000)
+	  
+	  MouseClick("left", 616,453);continue
+	  Sleep(4000)
+	  MouseClick("left", 103,547);start
+	  fightDuel()
+	  Sleep(2000)
+	  $count = $count - 1
+   Until ($allstop==1 OR $count==0)
+EndFunc
+
+;Fight in duel
+Func fightDuel()
+   $seq = 0
+   $stop = 0
+   $allstop = 0
+   
+   ;stuck in something handler
+   Local $somewhereoutsidecounter = 0
+   Local $stuckseq = 0
+   Local $startarena = TimerInit()
+   Local $arenatimersecond = 0
+   Do
+	  $stuckseq = $stuckseq+1
+	  if (Mod($stuckseq,400)==0) Then
+		 ;check if too long playing maybe something is not right
+		 Local $dif = TimerDiff($startarena)
+		 if ($dif > 30000) Then
+			$startarena = TimerInit()
+			$arenatimersecond = $dif/1000
+		 EndIf
+		 if ($arenatimersecond > 240) Then
+			MsgBox(0, "popup", "too long minutes ", 3)
+			Sleep(5000)
+			MouseClick("left", 148, 58) ;menu
+			Sleep(2000)
+			MouseClick("left", 138, 58) ;menu double
+			Sleep(2000)
+			MouseClick("left", 270, 132) ;fight
+			Sleep(10000)
+		 EndIf
+	  EndIf
+	  
+	  Send("0")
+	  Sleep(1);
+	  if (Mod($seq, 4)==0) Then
+		 Send("K")
+	  EndIf
+	  $seq = $seq + 1
+	  if ($seq>15) then
+		 Send("{SPACE}")
+		 if ($seq>20) Then
+			$seq = 0
+		 EndIf
+	  EndIf
+	  if (getDominantColor(PixelGetColor(144,541))=="red") then
+		 Send("{SPACE}")
+	  EndIf
+	  $loading = PixelGetColor(640, 540);
+	  ;or chat bar has been clicked
+	  if ($loading==0x161a1d) Then
+		 if (PixelGetColor(136,540)==0x292c30) Then
+			$stop = 1
+			MsgBox(0,"chat", "this is chat window", 1)
+			Sleep(1000)
+			MouseClick("left", 943, 52); close
+			Sleep(2000)
+		 EndIf
+	  EndIf
+	  if (PixelGetColor(690,105)==0x161a1d AND PixelGetColor(800,105)==0x035d01 AND PixelGetColor(841,105)==0x515151) Then
+		 MsgBox(0, "done", "done", 1)
+		 Sleep(1000)
+		 $stop = 1
+	  EndIf
+   Until ($stop==1 or $allstop==1)
 EndFunc
