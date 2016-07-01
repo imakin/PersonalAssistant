@@ -31,7 +31,7 @@ Do
 Until False
 
 Func showStatus()
-   ToolTip(StringFormat("%s", $status),0,0)
+   ToolTip(StringFormat("%s", $status),1000,0)
 EndFunc
 
 
@@ -89,7 +89,7 @@ Func startArena()
    Do
 	  calibrateWindow()
 	  $arena_continue = 1
-	  
+	  checkInsideFight()
 	  Sleep(500)
 	  if ($arena_tier==5) Then
 		 MouseClickDrag("left", 700, 255, 130, 255);drag right mosst for foolproof
@@ -98,9 +98,11 @@ Func startArena()
 		 Sleep(500)
 	  Else
 		 MouseClickDrag("left", 130, 255, 700, 255);drag left mosst for foolproof
-		 Sleep(500)
+		 checkInsideFight()
+		 Sleep(1500)
 		 MouseClickDrag("left", 130, 255, 700, 255);drag left mosst for foolproof
 	  EndIf
+	  checkInsideFight()
 	  Sleep(1000)
 	  
 	  checkInsideFight()
@@ -118,7 +120,7 @@ Func startArena()
 			checkInsideFight()
 		 Until (getDominantColor(PixelGetColor(435,525))=="green" OR ($wait>10))
 	  EndIf
-	  
+	  checkInsideFight()
 	  ;check if currently in one of 3 fights
 	  if (PixelGetColor(160,222)==0x2b2c30 AND PixelGetColor(816,222)==0x2b2c30) Then
 		 Local $leftresult=PixelGetColor(294,280) ;lose 721a1a red, win 26552e
@@ -149,7 +151,7 @@ Func startArena()
 			Sleep(5000);
 		 Else
 			
-			if (Not(getDominantColor(PixelGetColor(595,516))=="green") AND Not(getDominantColor(PixelGetColor(438,516))=="green")) Then
+			if (Not(getDominantColor(PixelGetColor(595,516))=="green") )Then; AND Not(getDominantColor(PixelGetColor(438,516))=="green")) Then; WHEN THERE ARE UPCOMING EVENT
 			   MsgBox(0, "fight", "inside fight menu, not arena (special)", 1)
 			   MouseClickDrag("left", 130, 255, 700, 255);drag left mosst for foolproof
 			   Sleep(1000)
@@ -160,18 +162,18 @@ Func startArena()
 			   do
 				  Sleep(1000)
 				  $wait = $wait+1
-				  checkInsideFight()
+				  ;checkInsideFight()
 			   Until (getDominantColor(PixelGetColor(595,516))=="green" OR ($wait>10))
 			   MouseClickDrag("left", 700, 255, 130, 255);drag right mosst for foolproof
 			   MouseClickDrag("left", 700, 255, 130, 255);drag right mosst for foolproof
 			   Sleep(1000)
 			EndIf
 			checkInsideFight()
-			if (getDominantColor(PixelGetColor(438,516))=="green") Then
-			   MouseClick("left",438,516)
-			Else
+			;if (getDominantColor(PixelGetColor(438,516))=="green") Then ; WHEN THERE ARE UPCOMING EVENT
+			;   MouseClick("left",438,516)
+			;Else
 			   MouseClick("left", 674, 508);
-			EndIf
+			;EndIf
 			Sleep(5000);
 		 EndIf
 	  EndIf
@@ -196,6 +198,7 @@ Func askForHelp()
    $status = "ask for help"
    Local $carryon = 1
    Do
+	  checkInsideFight()
 	  ;Detect if we can ask for help
 	  Local $helpbutton = PixelGetColor(260, 175)
 	  Local $red = BitShift($helpbutton, 16)
@@ -204,6 +207,7 @@ Func askForHelp()
 	  if ($green > $red) Then
 		 if ($green > $blue) Then
 			Send("Q")
+			checkInsideFight()
 			Sleep(3000)
 		 Else
 			$carryon = 0
@@ -222,6 +226,7 @@ Func askForHelp()
 	  if (($red-80) > $blue) Then
 		 MsgBox(0, "Out of energy", "we're out of energy", 2)
 		 $arena_continue = 0
+		 checkInsideFight()
 		 Sleep(4000)
 		 MouseClick("left", 57, 55)
 		 if ($arena_tier==2) Then
@@ -266,11 +271,14 @@ EndFunc
 
 ;arena
 Func addToTeam()
+   checkInsideFight()
    $status = "add to team"
    MouseClickDrag("left", 319, 235, 145, 135)
    sleep(500)
+   checkInsideFight()
    MouseClickDrag("left", 319, 235, 145, 210)
    sleep(500)
+   checkInsideFight()
    MouseClickDrag("left", 319, 235, 145, 290)
    sleep(500)
 EndFunc
@@ -336,7 +344,7 @@ Func fightArena()
    Local $somewhereoutsidecounter = 0
    Local $stuckseq = 0
    Local $startarena = TimerInit()
-   Local $arenatimersecond = 0
+   $arenatimersecond = 0
    Do
 	  $stuckseq = $stuckseq+1
 	  if (Mod($stuckseq,400)==0) Then
@@ -434,11 +442,19 @@ Func fightArena()
 	  if ($loading==0x2b2c30) Then
 		 $loading = PixelGetColor(480,330)
 		 if ($loading==0x2b2c30) Then
-			MsgBox(0, "popup", "(view rewards) ?(TODO)", 2)
-			$stop = 1
+			MsgBox(0, "popup", "(view rewards) ?(TODO)", 1)
 			Sleep(300)
-			MouseClick("left", 57, 55); back
-			;Sleep(10000)
+			$arenatimersecond = 0
+			if (getDominantColor(PixelGetColor(930,560))=="green") Then
+			   $stop = 1
+			   MouseClick("left", 57, 55); back
+			   Sleep(5000)
+			Else
+			   Send("J")
+			   MouseClick("left", 57, 55); back
+			EndIf
+			
+			;
 		 EndIf
 	  ElseIf ($loading==0x000000) Then
 		 ; stuck in alliance quest window; todo alliance quest window with empty quest
@@ -475,6 +491,8 @@ Func fightArena()
 			$stop = 1
 			Sleep(1000)
 			MouseClick("left", 57, 55); back
+			Sleep(1000)
+			MouseClick("left", 57, 55); back
 			Sleep(10000)
 		 EndIf
 	  EndIf
@@ -482,6 +500,8 @@ Func fightArena()
 		 if (PixelGetColor(936,511)==0x0b0b0c) Then ;the champion filter button
 			MsgBox(0, "popup", "(team adding dark)", 2)
 			$stop = 1
+			Sleep(1000)
+			MouseClick("left", 57, 55); back
 			Sleep(1000)
 			MouseClick("left", 57, 55); back
 			Sleep(10000)
@@ -560,24 +580,39 @@ Func fight()
 	  Local $ca = PixelGetColor(204,190)
 	  if ($ca==0x2b2c30) Then
 		 Local $cb = PixelGetColor(739,514)
-			if ($cb==0x2b2c30) Then
-			   if (getDominantColor(PixelGetColor(310,485))=="green" AND getDominantColor(PixelGetColor(741,485))=="green") Then
-				  $stop = 1
-				  Sleep(7000)
-				  MsgBox(0,"finished", "finished", 2)
-				  MouseClick("left", 300,475);back to quest button
-				  Sleep(15000)
-				  
-				  MsgBox(0,"arena", "my creator is away, i'll continue to arena to kill the time",2)
-				  MouseClick("left", 148, 58) ;menu
-				  Sleep(2000)
-				  MouseClick("left", 148, 58) ;menu
-				  Sleep(2000)
-				  MouseClick("left", 270, 132) ;fight
-				  Sleep(15000)
-				  startArena()
-			   EndIf
+		 if ($cb==0x2b2c30) Then
+			if (getDominantColor(PixelGetColor(310,485))=="green" AND getDominantColor(PixelGetColor(741,485))=="green") Then
+			   MsgBox(0,"finished", "i'm going to press the mid button (replay/next)", 2)
+			   Sleep(4000)
+			   MouseClick("left", 500,470)
+			   Sleep(1000)
+			   MouseClick("left", 500,470)
 			EndIf
+		 EndIf
+	  EndIf
+
+	  ;out of energy
+	  if (PixelGetColor(255,163)==0x2b2c30 AND PixelGetColor(720,165)==0x2b2c30) Then
+		 PixelSearch(151,105,771,518, 0x771100)
+		 if (Not(@error)) Then
+			$stop = 1
+			   ;Sleep(7000)
+			   ;MsgBox(0,"finished", "finished", 2)
+			   ;MouseClick("left", 300,475);back to quest button
+			   ;Sleep(15000)
+			MsgBox(0,"finished", "out of energy", 2)
+			
+			MsgBox(0,"out of energy", "my creator is away, i'll continue to arena to kill the time",2)
+			MouseClick("left", 148, 58) ;menu
+			Sleep(2000)
+			MouseClick("left", 148, 58) ;menu
+			Sleep(2000)
+			MouseClick("left", 148, 58) ;menu
+			Sleep(2000)
+			MouseClick("left", 270, 132) ;fight
+			Sleep(15000)
+			startArena()
+		 EndIf
 	  EndIf
    Until ($stop==1 or $allstop==1)
 EndFunc
@@ -607,6 +642,28 @@ Func nextNode()
 		 if (@error) Then
 			$greendot = PixelSearch(80,100, 957, 530, 0x00e400)
 		 EndIf
+		 
+		 ;Check if out of energy
+			$energycolor = PixelGetColor(465,72)
+			Local $red = BitShift($energycolor , 16)
+			Local $green = BitShift(BitAND($energycolor , 0x00FF00), 8)
+			Local $blue = BitAND($energycolor , 0x0000FF)
+			if ( (($red-$green)>45) AND ($blue<6) ) Then
+			   Local $dummy
+			Else
+			   $arena_tier = 3
+			   MsgBox(0,"out of energy", "my creator is away, i'll continue to arena to kill the time",2)
+			   MouseClick("left", 148, 58) ;menu
+			   Sleep(2000)
+			   MouseClick("left", 148, 58) ;menu
+			   Sleep(2000)
+			   MouseClick("left", 148, 58) ;menu
+			   Sleep(2000)
+			   MouseClick("left", 270, 132) ;fight
+			   Sleep(15000)
+			   startArena()
+			EndIf
+		 ;End check
 	  Until not(@error)
 	  Send("J")
 	  MouseMove($greendot[0], $greendot[1])
@@ -726,9 +783,11 @@ EndFunc
 
 Func checkInsideFight()
    if (isInsideFight()) Then
-	  MsgBox(0,"fight", "inside FIGHT!",1)
-	  Sleep(500)
+	  ;MsgBox(0,"fight", "inside FIGHT!",1)
+	  ToolTip("inside fight",1000,0)
+	  ;Sleep(500)
 	  MouseClick("left",200,200)
+	  MouseClick("left",220,200)
 	  $arena_continue = 0
 	  fightArena()
 	  return 1
@@ -760,17 +819,22 @@ Func Duel()
    Do
 	  MouseClick("left", 276,97)
 	  Sleep(1000)
-	  Send("rooster 210");name to search
+	  Send("AquaticHornet");name to search
 	  Sleep(1000)
-	  MouseClick("left", 772,102)
+	  MouseClick("left", 772,102);search button
 	  Sleep(5000)
-	  
+	  ;1nd search position
+		 MouseClick("left", 286,186)
+		 Sleep(1000)
+		 MouseClick("left", 445,186)
+		 Sleep(4000)
+	  if False Then
 	  ;2nd search position
 		 MouseClick("left", 286,246)
 		 Sleep(1000)
 		 MouseClick("left", 445,246)
 		 Sleep(4000)
-	  
+	  EndIf
 	  MouseClick("left", 616,453);continue
 	  Sleep(4000)
 	  MouseClick("left", 103,547);start
