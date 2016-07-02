@@ -26,6 +26,8 @@ $screensave[5] = 0
 $arena_tier = 2
 $arena_continue = 1
 $allstop = 0
+;Flag whether to activate quest hunting mode (do quest if there are energy)
+$quest_active = False
 Do
    Sleep(1)
 Until False
@@ -86,112 +88,133 @@ EndFunc
 Func startArena()
    $status = "start arena"
    $allstop = 0
+   $quest_play = False
+   $match_number = 0
    Do
 	  calibrateWindow()
+	  $match_number = $match_number + 1
+	  if ($quest_active AND PixelGetColor(171,56)==0x5f5f62) Then ;quest is active, make sure not in fight and we can click menu
+		 if (checkEnergyIsFull()) Then
+			;to reduce stack memory we quit but set flag
+			MsgBox(0, "quest", "i want to hunt ISOs", 2)
+			$quest_play = True
+			$allstop = 1
+		 EndIf
+	  EndIf
+	  
+	  if (Mod($match_Number, 20)==0) Then
+		 
+	  EndIf
+	  
 	  $arena_continue = 1
-	  checkInsideFight()
-	  Sleep(500)
-	  if ($arena_tier==5) Then
-		 MouseClickDrag("left", 700, 255, 130, 255);drag right mosst for foolproof
-		 Sleep(500)
-		 MouseClickDrag("left", 700, 255, 130, 255);drag right mosst for foolproof
-		 Sleep(500)
-	  Else
-		 MouseClickDrag("left", 130, 255, 700, 255);drag left mosst for foolproof
+	  if ($allstop==0) Then
 		 checkInsideFight()
-		 Sleep(1500)
-		 MouseClickDrag("left", 130, 255, 700, 255);drag left mosst for foolproof
-	  EndIf
-	  checkInsideFight()
-	  Sleep(1000)
-	  
-	  checkInsideFight()
-	  
-	  if (Not(getDominantColor(PixelGetColor(346,535))=="green") AND (Not($arena_tier==5))) Then
-		 MsgBox(0, "fight", "inside fight menu, not arena", 1)
-		 MouseClickDrag("left", 130, 255, 700, 255);drag left mosst for foolproof
-		 Sleep(400)
-		 MouseClick("left", 500,446)
-		 Sleep(2000)
-		 Local $wait = 0
-		 do
-			Sleep(1000)
-			$wait = $wait+1
-			checkInsideFight()
-		 Until (getDominantColor(PixelGetColor(435,525))=="green" OR ($wait>10))
-	  EndIf
-	  checkInsideFight()
-	  ;check if currently in one of 3 fights
-	  if (PixelGetColor(160,222)==0x2b2c30 AND PixelGetColor(816,222)==0x2b2c30) Then
-		 Local $leftresult=PixelGetColor(294,280) ;lose 721a1a red, win 26552e
-		 Local $rightresult=PixelGetColor(697,280)
-		 if ($leftresult==0x26552e OR $leftresult==0x721a1a) Then
-			if ($rightresult==0x26552e OR $rightresult==0x721a1a) Then
-			   MsgBox(0, "fight", "more fight to go", 1)
-			   Sleep(1000)
-			   MouseClick("left", 200,200)
-			   fightArena()
-			   $arena_continue = 0
-			EndIf
-		 EndIf
-	  EndIf
-	  checkInsideFight()
-	  if ($arena_continue==1) Then
-		 if ($arena_tier==2) Then
-			;Send("9")
-			MouseClick("left", 386, 446)
-			Sleep(5000)
-			MouseClick("left", 413, 522);double check
-		 Elseif ($arena_tier==3) Then
-			MouseClick("left", 830, 510)
-			Sleep(5000)
-			MouseClick("left", 760, 508);double check
-		 Elseif ($arena_tier==4) Then ;arena tier 4
-			MouseClick("left", 433, 522);
-			Sleep(5000);
+		 Sleep(500)
+		 if ($arena_tier==5) Then
+			MouseClickDrag("left", 700, 255, 130, 255);drag right mosst for foolproof
+			Sleep(500)
+			MouseClickDrag("left", 700, 255, 130, 255);drag right mosst for foolproof
+			Sleep(500)
 		 Else
-			
-			if (Not(getDominantColor(PixelGetColor(595,516))=="green") )Then; AND Not(getDominantColor(PixelGetColor(438,516))=="green")) Then; WHEN THERE ARE UPCOMING EVENT
-			   MsgBox(0, "fight", "inside fight menu, not arena (special)", 1)
-			   MouseClickDrag("left", 130, 255, 700, 255);drag left mosst for foolproof
-			   Sleep(1000)
-			   MouseClickDrag("left", 130, 255, 700, 255);drag left mosst for foolproof
-			   Sleep(1000)
-			   MouseClick("left", 500,446)
-			   Local $wait = 0
-			   do
-				  Sleep(1000)
-				  $wait = $wait+1
-				  ;checkInsideFight()
-			   Until (getDominantColor(PixelGetColor(595,516))=="green" OR ($wait>10))
-			   MouseClickDrag("left", 700, 255, 130, 255);drag right mosst for foolproof
-			   MouseClickDrag("left", 700, 255, 130, 255);drag right mosst for foolproof
-			   Sleep(1000)
-			EndIf
+			MouseClickDrag("left", 130, 255, 700, 255);drag left mosst for foolproof
 			checkInsideFight()
-			;if (getDominantColor(PixelGetColor(438,516))=="green") Then ; WHEN THERE ARE UPCOMING EVENT
-			;   MouseClick("left",438,516)
-			;Else
-			   MouseClick("left", 674, 508);
-			;EndIf
-			Sleep(5000);
+			Sleep(1500)
+			MouseClickDrag("left", 130, 255, 700, 255);drag left mosst for foolproof
 		 EndIf
-	  EndIf
-	  
-	  checkInsideFight()
-	  Sleep(5000)
-	  Local $current_arena_tier  = $arena_tier
-	  
-	  askForHelp()
-	  checkInsideFight()
-	  if ($arena_continue==1) Then
-		 ; We have energy, continue;else change arena tier in next loop
-		 addToTeam()
-		 findMatch()
-		 fightArena()
-	  EndIf
-	  
+		 checkInsideFight()
+		 Sleep(1000)
+		 
+		 checkInsideFight()
+		 
+		 if (Not(getDominantColor(PixelGetColor(346,535))=="green") AND (Not($arena_tier==5))) Then
+			MsgBox(0, "fight", "inside fight menu, not arena", 1)
+			MouseClickDrag("left", 130, 255, 700, 255);drag left mosst for foolproof
+			Sleep(400)
+			MouseClick("left", 500,446)
+			Sleep(2000)
+			Local $wait = 0
+			do
+			   Sleep(1000)
+			   $wait = $wait+1
+			   checkInsideFight()
+			Until (getDominantColor(PixelGetColor(435,525))=="green" OR ($wait>10))
+		 EndIf
+		 checkInsideFight()
+		 ;check if currently in one of 3 fights
+		 if (PixelGetColor(160,222)==0x2b2c30 AND PixelGetColor(816,222)==0x2b2c30) Then
+			Local $leftresult=PixelGetColor(294,280) ;lose 721a1a red, win 26552e
+			Local $rightresult=PixelGetColor(697,280)
+			if ($leftresult==0x26552e OR $leftresult==0x721a1a) Then
+			   if ($rightresult==0x26552e OR $rightresult==0x721a1a) Then
+				  MsgBox(0, "fight", "more fight to go", 1)
+				  Sleep(1000)
+				  MouseClick("left", 200,200)
+				  fightArena()
+				  $arena_continue = 0
+			   EndIf
+			EndIf
+		 EndIf
+		 checkInsideFight()
+		 if ($arena_continue==1) Then
+			if ($arena_tier==2) Then
+			   ;Send("9")
+			   MouseClick("left", 386, 446)
+			   Sleep(5000)
+			   MouseClick("left", 413, 522);double check
+			Elseif ($arena_tier==3) Then
+			   MouseClick("left", 830, 510)
+			   Sleep(5000)
+			   MouseClick("left", 760, 508);double check
+			Elseif ($arena_tier==4) Then ;arena tier 4
+			   MouseClick("left", 433, 522);
+			   Sleep(5000);
+			Else
+			   
+			   if (Not(getDominantColor(PixelGetColor(595,516))=="green") )Then; AND Not(getDominantColor(PixelGetColor(438,516))=="green")) Then; WHEN THERE ARE UPCOMING EVENT
+				  MsgBox(0, "fight", "inside fight menu, not arena (special)", 1)
+				  MouseClickDrag("left", 130, 255, 700, 255);drag left mosst for foolproof
+				  Sleep(1000)
+				  MouseClickDrag("left", 130, 255, 700, 255);drag left mosst for foolproof
+				  Sleep(1000)
+				  MouseClick("left", 500,446)
+				  Local $wait = 0
+				  do
+					 Sleep(1000)
+					 $wait = $wait+1
+					 ;checkInsideFight()
+				  Until (getDominantColor(PixelGetColor(595,516))=="green" OR ($wait>10))
+				  MouseClickDrag("left", 700, 255, 130, 255);drag right mosst for foolproof
+				  MouseClickDrag("left", 700, 255, 130, 255);drag right mosst for foolproof
+				  Sleep(1000)
+			   EndIf
+			   checkInsideFight()
+			   ;if (getDominantColor(PixelGetColor(438,516))=="green") Then ; WHEN THERE ARE UPCOMING EVENT
+			   ;   MouseClick("left",438,516)
+			   ;Else
+				  MouseClick("left", 674, 508);
+			   ;EndIf
+			   Sleep(5000);
+			EndIf
+		 EndIf
+		 
+		 checkInsideFight()
+		 Sleep(5000)
+		 Local $current_arena_tier  = $arena_tier
+		 
+		 askForHelp()
+		 checkInsideFight()
+		 if ($arena_continue==1) Then
+			; We have energy, continue;else change arena tier in next loop
+			addToTeam()
+			findMatch()
+			fightArena()
+		 EndIf
+	  EndIf;if ($allstop==0) Then
    Until ($allstop==1)
+   
+   if ($quest_play) Then
+	  questplay()
+   EndIf
 EndFunc
 
 Func askForHelp()
@@ -617,12 +640,75 @@ Func fight()
    Until ($stop==1 or $allstop==1)
 EndFunc
 
+Func questplay()
+   $quest_stop = 0
+   Do
+	  MouseClick("left", 138, 58) ;menu
+	  Sleep(1000)
+	  MouseClick("left", 138, 58) ;menu double
+	  Sleep(1000)
+	  MouseClick("left", 138, 58) ;menu double
+	  Sleep(1000)
+	  MouseClick("left", 138, 58) ;menu double
+	  Sleep(1000)
+	  MouseClick("left", 270, 132) ;fight
+	  Sleep(500)
+	  MouseClick("left", 270, 132) ;fight double
+	  Sleep(10000)
+	  
+	  MouseClick("left", 271,430);Event quest
+	  Sleep(5000)
+	  
+	  ;Event specific 
+	  MouseClick("left", 100,480)
+	  Sleep(1000)
+	  MouseClick("left", 100,480)
+	  Sleep(3000)
+	  MouseClick("left", 172,350)
+	  Sleep(3000)
+	  MouseClick("left", 384,294)
+	  Sleep(3000)
+	  MouseClick("left", 544,268)
+	  ToolTip("3", 1000,100)
+	  Sleep(3000)
+	  ToolTip("2", 1000,100)
+	  Sleep(3000)
+	  ToolTip("1", 1000,100)
+	  Sleep(3000)
+	  MouseClick("left", 877,547)
+	  ToolTip("3", 1000,100)
+	  Sleep(3000)
+	  ToolTip("2", 1000,100)
+	  Sleep(3000)
+	  ToolTip("1", 1000,100)
+	  Sleep(3000)
+	  fight();skip dialog until we can go to next node
+	  nextNode()
+	  ;end event specific
+	  
+   Until ($quest_stop==0 OR $allstop==0)
+EndFunc
 
 Func nextNode()
    $allstop = 0
    Do
 	  Local $step = 0
 	  Do
+		 ;Check if out of energy
+			if (checkEnergyIsEmpty()) Then
+			   $arena_tier = 3
+			   MsgBox(0,"out of energy", "my creator is away, i'll continue to arena to kill the time",2)
+			   MouseClick("left", 148, 58) ;menu
+			   Sleep(2000)
+			   MouseClick("left", 148, 58) ;menu
+			   Sleep(2000)
+			   MouseClick("left", 148, 58) ;menu
+			   Sleep(2000)
+			   MouseClick("left", 270, 132) ;fight
+			   Sleep(15000)
+			   startArena()
+			EndIf
+		 ;End check
 		 $step = $step + 1
 		 if ($step == 10) Then
 			MouseClickDrag("left", 450, 320, 642, 346)
@@ -643,27 +729,6 @@ Func nextNode()
 			$greendot = PixelSearch(80,100, 957, 530, 0x00e400)
 		 EndIf
 		 
-		 ;Check if out of energy
-			$energycolor = PixelGetColor(465,72)
-			Local $red = BitShift($energycolor , 16)
-			Local $green = BitShift(BitAND($energycolor , 0x00FF00), 8)
-			Local $blue = BitAND($energycolor , 0x0000FF)
-			if ( (($red-$green)>45) AND ($blue<6) ) Then
-			   Local $dummy
-			Else
-			   $arena_tier = 3
-			   MsgBox(0,"out of energy", "my creator is away, i'll continue to arena to kill the time",2)
-			   MouseClick("left", 148, 58) ;menu
-			   Sleep(2000)
-			   MouseClick("left", 148, 58) ;menu
-			   Sleep(2000)
-			   MouseClick("left", 148, 58) ;menu
-			   Sleep(2000)
-			   MouseClick("left", 270, 132) ;fight
-			   Sleep(15000)
-			   startArena()
-			EndIf
-		 ;End check
 	  Until not(@error)
 	  Send("J")
 	  MouseMove($greendot[0], $greendot[1])
@@ -678,6 +743,40 @@ Func nextNode()
 	  Send("J")
    Until ($allstop==1)
 EndFunc
+
+;check energy is full
+Func checkEnergyIsFull()
+   if Not(PixelGetColor(471,65)==0xffda59) Then ; check the energy logo is there
+	  ToolTip("cant check energy", 1000,100)
+	  Return False
+   EndIf
+   $energycolor = PixelGetColor(573,72)
+   Local $red = BitShift($energycolor , 16)
+   Local $green = BitShift(BitAND($energycolor , 0x00FF00), 8)
+   Local $blue = BitAND($energycolor , 0x0000FF)
+   if ( (($red-$green)>45) AND ($blue<6) ) Then
+	  Return True
+   Else
+	  Return False
+   EndIf
+EndFunc
+;check energy is empty
+Func checkEnergyIsEmpty()
+   if Not(PixelGetColor(471,65)==0xffda59) Then ; check the energy logo is there
+	  ToolTip("cant check energy", 1000,100)
+	  Return False
+   EndIf
+   $energycolor = PixelGetColor(465,72)
+   Local $red = BitShift($energycolor , 16)
+   Local $green = BitShift(BitAND($energycolor , 0x00FF00), 8)
+   Local $blue = BitAND($energycolor , 0x0000FF)
+   if ( (($red-$green)>45) AND ($blue<6) ) Then
+	  Return False
+   Else
+	  Return True
+   EndIf
+EndFunc
+
 
 Func getDominantColor($color)
    Local $red = BitShift($color, 16)
@@ -904,7 +1003,7 @@ Func fightDuel()
 	  EndIf
 	  if (PixelGetColor(690,105)==0x161a1d AND PixelGetColor(800,105)==0x035d01 AND PixelGetColor(841,105)==0x515151) Then
 		 MsgBox(0, "done", "done", 1)
-		 Sleep(1000)
+		 Sleep(2000)
 		 $stop = 1
 	  EndIf
    Until ($stop==1 or $allstop==1)
