@@ -28,6 +28,9 @@ $arena_continue = 1
 $allstop = 0
 ;Flag whether to activate quest hunting mode (do quest if there are energy)
 $quest_active = False
+$match_number = 0
+$replay_instead_of_ngarena = True
+
 Do
    Sleep(1)
 Until False
@@ -89,10 +92,9 @@ Func startArena()
    $status = "start arena"
    $allstop = 0
    $quest_play = False
-   $match_number = 0
    Do
-	  calibrateWindow()
 	  $match_number = $match_number + 1
+	  calibrateWindow()
 	  if ($quest_active AND PixelGetColor(171,56)==0x5f5f62) Then ;quest is active, make sure not in fight and we can click menu
 		 if (checkEnergyIsFull()) Then
 			;to reduce stack memory we quit but set flag
@@ -101,9 +103,30 @@ Func startArena()
 			$allstop = 1
 		 EndIf
 	  EndIf
-	  
-	  if (Mod($match_Number, 20)==0) Then
-		 
+	  ToolTip(StringFormat("match number : %d",$match_number),1000,100)
+	  if (Mod($match_number, 5)==0 AND PixelGetColor(171,56)==0x5f5f62) Then
+		 MouseClick("left", 138, 58) ;menu
+		 Sleep(1000)
+		 MouseClick("left", 138, 58) ;menu double
+		 Sleep(1000)
+		 if (PixelGetColor(400,92)==0x590000) Then
+			;send help for the alliance
+			MouseClick("left",375,131);alliance
+			Sleep(10000)
+			MouseClick("left",490,180);help tab
+			Sleep(2000)
+			Do
+			   MouseClick("left",760,235);help button
+			   Sleep(2000)
+			Until (Not(getDominantColor(PixelGetColor(750,235))=="green"))
+			
+			MouseClick("left", 138, 58) ;menu
+			Sleep(1000)
+			MouseClick("left", 138, 58) ;menu double
+			Sleep(1000)
+			MouseClick("left", 270, 132) ;fight
+			Sleep(8000)
+		 EndIf
 	  EndIf
 	  
 	  $arena_continue = 1
@@ -210,6 +233,8 @@ Func startArena()
 			fightArena()
 		 EndIf
 	  EndIf;if ($allstop==0) Then
+	  
+	  
    Until ($allstop==1)
    
    if ($quest_play) Then
@@ -614,29 +639,7 @@ Func fight()
 		 EndIf
 	  EndIf
 
-	  ;out of energy
-	  if (PixelGetColor(255,163)==0x2b2c30 AND PixelGetColor(720,165)==0x2b2c30) Then
-		 PixelSearch(151,105,771,518, 0x771100)
-		 if (Not(@error)) Then
-			$stop = 1
-			   ;Sleep(7000)
-			   ;MsgBox(0,"finished", "finished", 2)
-			   ;MouseClick("left", 300,475);back to quest button
-			   ;Sleep(15000)
-			MsgBox(0,"finished", "out of energy", 2)
-			
-			MsgBox(0,"out of energy", "my creator is away, i'll continue to arena to kill the time",2)
-			MouseClick("left", 148, 58) ;menu
-			Sleep(2000)
-			MouseClick("left", 148, 58) ;menu
-			Sleep(2000)
-			MouseClick("left", 148, 58) ;menu
-			Sleep(2000)
-			MouseClick("left", 270, 132) ;fight
-			Sleep(15000)
-			startArena()
-		 EndIf
-	  EndIf
+	  
    Until ($stop==1 or $allstop==1)
 EndFunc
 
@@ -655,6 +658,11 @@ Func questplay()
 	  Sleep(500)
 	  MouseClick("left", 270, 132) ;fight double
 	  Sleep(10000)
+	  
+	  MouseClickDrag("left", 130, 255, 700, 255);drag left mosst for foolproof
+	  Sleep(1000)
+	  MouseClickDrag("left", 130, 255, 700, 255);drag left mosst for foolproof
+	  Sleep(1000)
 	  
 	  MouseClick("left", 271,430);Event quest
 	  Sleep(5000)
@@ -738,6 +746,33 @@ Func nextNode()
 	  Sleep(500)
 	  MouseClick("left", $greendot[0], $greendot[1])
 	  Sleep(10000)
+
+	  ;out of energy
+	  if (PixelGetColor(255,163)==0x2b2c30 AND PixelGetColor(720,165)==0x2b2c30) Then
+		 ;ToolTip("masuk2")
+		 ;ToolTip(StringFormat("%X",PixelGetColor(294,336)));help llogo
+		 if (getDominantColor(PixelGetColor(294,336))=="red") Then
+			;ToolTip("dapet")
+			$stop = 1
+			   ;Sleep(7000)
+			   ;MsgBox(0,"finished", "finished", 2)
+			   ;MouseClick("left", 300,475);back to quest button
+			   ;Sleep(15000)
+			MsgBox(0,"finished", "out of energy", 2)
+			
+			MsgBox(0,"out of energy", "my creator is away, i'll continue to arena to kill the time",2)
+			MouseClick("left", 148, 58) ;menu
+			Sleep(2000)
+			MouseClick("left", 148, 58) ;menu
+			Sleep(2000)
+			MouseClick("left", 148, 58) ;menu
+			Sleep(2000)
+			MouseClick("left", 270, 132) ;fight
+			Sleep(15000)
+			startArena()
+		 EndIf
+	  EndIf
+	  
 	  fight()
 	  Sleep(4000)
 	  Send("J")
