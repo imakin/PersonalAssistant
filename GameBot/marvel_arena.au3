@@ -11,7 +11,7 @@ HotKeySet("+!p", "playthegame")
 HotKeySet("+!c", "calibrateWindow")
 HotKeySet("+!i", "showStatus")
 
-
+$duel_target = "Lilly1990"
 Global $status="ngondek"
 Global $savepixel = 0
 Global $screensave[6]
@@ -23,7 +23,7 @@ $screensave[4] = 0
 $screensave[5] = 0
 
 ;This indicates which arena tier shall be played, possible is 2, or 3
-$arena_tier = 2
+$arena_tier = 3
 $arena_continue = 1
 $allstop = 0
 ;Flag whether to activate quest hunting mode (do quest if there are energy)
@@ -263,6 +263,11 @@ Func askForHelp()
 	  Else
 		 $carryon = 0
 	  EndIf
+	  if (checkInsideHome()) Then
+		 gotoFightMenu()
+		 $arena_continue = 0
+		 Return
+	  EndIf
    Until ($carryon==0)
    
    ;Detect if less than 3 champion has energy
@@ -331,6 +336,49 @@ Func addToTeam()
    sleep(500)
 EndFunc
 
+;For arena avoid class penalty
+Func rearrangeTeam()
+   ToolTip("rearange", 1000,200)
+   ;wait until ready
+   Local $wait = 10
+   Do
+	  ToolTip(StringFormat(" wait %d",$wait),1000,200)
+	  Sleep(500)
+	  $wait = $wait - 1
+   Until ($wait <1 or checkInsideFight())
+   Sleep(3000)
+   if ($arena_continue==0) Then
+	  Return
+   EndIf
+   Local $clear=False
+   Local $c = 0
+   Do
+	  $clear = True
+	  ToolTip(getDominantColor(PixelGetColor(421,262)),1000,200)
+	  
+	  if (getDominantColor(PixelGetColor(421,262))=="red") Then
+		 MouseClickDrag("left", 340,225, 340,308)
+		 Sleep(2000)
+		 $clear = False
+	  EndIf
+	  if (getDominantColor(PixelGetColor(421,338))=="red") Then
+		 MouseClickDrag("left", 340,308, 340,380)
+		 Sleep(2000)
+		 $clear = False
+	  EndIf
+	  if (getDominantColor(PixelGetColor(421,413))=="red") Then
+		 MouseClickDrag("left", 340,380, 340,225)
+		 Sleep(2000)
+		 $clear = False
+	  EndIf
+	  
+	  $c = $c+1
+	  if ($c>10) Then
+		 $clear = True;give up
+	  EndIf
+   Until ($clear)
+EndFunc
+
 ;Arena
 Func findMatch()
    $status = "find match"
@@ -347,7 +395,8 @@ Func findMatch()
 	  PixelSearch(543,280,575,294, 0x319732)
 	  if (@error) Then
 		 ;mid is not easy
-		 MsgBox(0,"tier", "mid and high is not easy",1)
+		 ;MsgBox(0,"tier", "mid and high is not easy",1)
+		 ToolTip("mid and high is not easy",1000,200)
 		 MouseClick("left", 600,200)
 	  Else
 		 ;mid is easy
@@ -358,9 +407,12 @@ Func findMatch()
 	  MouseClick("left", 687, 445)
    EndIf
 		 
-		 checkInsideFight()
+   checkInsideFight()
    Sleep(3000)
    Send("0")
+   
+   rearrangeTeam()
+   
    $c = PixelGetColor(841,574)
    if (GetDominantColor($c)=="green") Then
 	  Sleep(3000)
@@ -397,7 +449,7 @@ Func fightArena()
 	  $stuckseq = $stuckseq+1
 	  if (Mod($stuckseq,400)==0) Then
 		 $stuqseq = 1
-		 ;ToolTip("check stuck")
+		 ToolTip("check stuck", 1000,200)
 		 if (checkStuck()) Then
 			updateCapture()
 			$stop = 1
@@ -463,14 +515,16 @@ Func fightArena()
 			$stop = 1
 			MsgBox(0, "popup", "shall i press back button? (loading screen)", 2)
 			Sleep(2000)
-			MouseClick("left", 57, 55); back because we might ended up in 3* 4* tier arena
+			MouseClick("left", 57, 55); back because we might ended up in wrong 2* 3* 4* tier arena
+			Sleep(500)
+			MouseClick("left", 57, 55); back because we might ended up in wrong 2* 3* 4* tier arena
 			Sleep(10000)
 		 EndIf
 	  EndIf
 	  
 	  ;or chat bar has been clicked
 	  if ($loading==0x161a1d) Then
-		 if (PixelGetColor(136,540)==0x292c30) Then
+		 if (PixelGetColor(15,540)==0x2a2d31) Then
 			$stop = 1
 			MsgBox(0,"chat", "this is chat window", 1)
 			Sleep(1000)
@@ -491,15 +545,21 @@ Func fightArena()
 		 $loading = PixelGetColor(480,330)
 		 if ($loading==0x2b2c30) Then
 			MsgBox(0, "popup", "(view rewards) ?(TODO)", 1)
-			Sleep(300)
+			Sleep(2000)
 			$arenatimersecond = 0
 			if (getDominantColor(PixelGetColor(930,560))=="green") Then
 			   $stop = 1
 			   MouseClick("left", 57, 55); back
+			   Sleep(400)
+			   MouseClick("left", 57, 55); back
 			   Sleep(5000)
 			Else
+			   $status = "view rewards that doesn't end yet"
+			   $stop = 1
 			   Send("J")
 			   MouseClick("left", 57, 55); back
+			   Sleep(400)
+			   MouseClick("left", 57, 55); back000K0000K000 0K 0 0 0 0K 0K000
 			EndIf
 			
 			;
@@ -577,7 +637,70 @@ Func fightArena()
 			EndIf
 		 EndIf
 	  EndIf
-			
+	  
+	  ;When blue stack service error.. The biggest to handle
+	  Local $inside_launcher = False
+	  Local $inside_login = False
+	  $inside_launcher = False
+	  Local $yellowlogo = PixelSearch(870,40,945,260, 0xf38025)
+	  if (Not(@error)) Then
+		 if (PixelGetColor($yellowlogo[0]+1, $yellowlogo[1]+1)==0xf38025) Then
+			PixelSearch($yellowlogo[0]-10,$yellowlogo[1]-10, $yellowlogo[0]+50, $yellowlogo[1]+50, 0xffffff)
+			if (Not(@error)) Then
+			   $inside_launcher = True
+			   ToolTip("inside launcher",1000,300)
+			EndIf
+		 EndIf
+	  EndIf
+	  ;if ((PixelGetColor(70,90)==0) AND (PixelGetColor(290,90)==0) AND (PixelGetColor(300,470)==0) AND (PixelGetColor(860,470)==0)) Then
+		 ;Sleep(1000)
+	  ;EndIf
+	  $inside_login = False
+	  if ((getDominantColor(PixelGetColor(745,500))=="blue") AND (getDominantColor(PixelGetColor(847,502))=="blue")) Then
+		 if ((PixelGetColor(70,90)==0) AND (PixelGetColor(290,90)==0) AND (PixelGetColor(300,470)==0) AND (PixelGetColor(860,470)==0)  ) Then
+			Sleep(2000)
+			if ((getDominantColor(PixelGetColor(745,500))=="blue") AND (getDominantColor(PixelGetColor(847,502))=="blue")) Then
+			   if ((PixelGetColor(70,90)==0) AND (PixelGetColor(290,90)==0) AND (PixelGetColor(300,470)==0) AND (PixelGetColor(860,470)==0)  ) Then
+				  $inside_login = True
+				  ToolTip("inside login",1000,300)
+			   EndIf
+			EndIf
+		 EndIf
+	  EndIf
+	  if ($inside_launcher OR $inside_login) Then
+		 
+		 if ($inside_launcher) Then
+			MsgBox(0, "bluestack", "bluestack error INSIDE LAUNCHER",20)
+		 Else
+			MsgBox(0, "bluestack", "bluestack error LOGIN ACCOUNT",20)
+		 EndIf
+		 $allstop=1
+		 Sleep(2000)
+		 MouseClick("left", 175,613);android window button
+		 Sleep(2000)
+		 MouseClickDrag("left", 900,310, 900,70);remove the bluestack service
+		 Sleep(2000)
+		 MouseClick("left", 121,613);android home button
+		 Sleep(2000)
+		 Local $repeat=10
+		 Do
+			MouseClickDrag("left", 500,100, 500, 550);upmost
+			Sleep(1000)
+			$repeat = $repeat-1
+		 Until ($repeat<1)
+		 MouseClick("left", 200,160);mcoc game
+		 Sleep(30000)
+		 Local $ccc = 0
+		 Do
+			ToolTip("not yet", 1000,300)
+			Sleep(1000)
+			$ccc = $ccc+1
+		 Until ((PixelGetColor(276,172)==0x013000) OR $ccc>40)
+		 gotoFightMenu()
+		 Sleep(2000)
+		 startArena()
+	  EndIf
+	  
    Until ($stop==1 or $allstop==1)
 EndFunc
 
@@ -914,6 +1037,14 @@ Func updateCapture()
    EndIf
 EndFunc
 
+;check if in home of the game, return true/false
+Func checkInsideHome()
+   if (getDominantColor(PixelGetColor(271,170))==getDominantColor(PixelGetColor(483,170)) AND getDominantColor(PixelGetColor(271,170))==getDominantColor(PixelGetColor(810,170)) AND getDominantColor(PixelGetColor(271,170))=="green") Then
+	  ToolTip("we're home", 1000,400)
+	  return True
+   EndIf
+   Return False
+EndFunc
 
 Func checkInsideFight()
    if (isInsideFight()) Then
@@ -924,9 +1055,9 @@ Func checkInsideFight()
 	  MouseClick("left",220,200)
 	  $arena_continue = 0
 	  fightArena()
-	  return 1
+	  return True
    Else
-	  return 0
+	  return False
    EndIf
 EndFunc
 ;Check if currently in fight
@@ -952,23 +1083,29 @@ Func Duel()
    Local $count=5;Limit count here
    Do
 	  MouseClick("left", 276,97)
-	  Sleep(1000)
-	  Send("AquaticHornet");name to search
+	  Sleep(3000)
+	  Send($duel_target);name to search
 	  Sleep(1000)
 	  MouseClick("left", 772,102);search button
 	  Sleep(5000)
+	  if False Then
 	  ;1nd search position
 		 MouseClick("left", 286,186)
 		 Sleep(1000)
 		 MouseClick("left", 445,186)
 		 Sleep(4000)
-	  if False Then
 	  ;2nd search position
 		 MouseClick("left", 286,246)
 		 Sleep(1000)
 		 MouseClick("left", 445,246)
 		 Sleep(4000)
 	  EndIf
+	  ;3rd search pos 
+	  MouseClick("left", 286,306)
+	  Sleep(1000)
+	  MouseClick("left", 445,306)
+	  Sleep(4000)
+	  
 	  MouseClick("left", 616,453);continue
 	  Sleep(4000)
 	  MouseClick("left", 103,547);start
@@ -1037,9 +1174,20 @@ Func fightDuel()
 		 EndIf
 	  EndIf
 	  if (PixelGetColor(690,105)==0x161a1d AND PixelGetColor(800,105)==0x035d01 AND PixelGetColor(841,105)==0x515151) Then
-		 MsgBox(0, "done", "done", 1)
+		 ;MsgBox(0, "done", "done", 1)
+		 ToolTip("done",1000,200)
 		 Sleep(2000)
 		 $stop = 1
 	  EndIf
    Until ($stop==1 or $allstop==1)
 EndFunc
+;Go to fight menu
+Func gotoFightMenu()
+   MouseClick("left", 148, 58) ;menu
+   Sleep(1000)
+   MouseClick("left", 138, 58) ;menu double
+   Sleep(1000)
+   MouseClick("left", 270, 132) ;fight
+   Sleep(10000)
+EndFunc
+   
