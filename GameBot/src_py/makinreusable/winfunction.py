@@ -4,6 +4,9 @@ import thread
 
 MOUSEEVENTF_LEFTDOWN = 2
 MOUSEEVENTF_LEFTUP = 4
+MOUSEEVENTF_MOVE = 0x0001
+MOUSEEVENTF_ABSOLUTE = 0x8000
+
 KEYCODE_LBUTTON = 0x01
 KEYCODE_RBUTTON = 0x02
 KEYCODE_MBUTTON = 0x04
@@ -22,6 +25,21 @@ def mouse_click(x,y):
 	windll.user32.SetCursorPos(x,y)
 	windll.user32.mouse_event(MOUSEEVENTF_LEFTDOWN, 0,0,0,0)
 	windll.user32.mouse_event(MOUSEEVENTF_LEFTUP, 0,0,0,0)
+
+def mouse_click_drag(x,y, to_x, to_y, drag_time=0.5):
+	windll.user32.SetCursorPos(x,y)
+	windll.user32.mouse_event(
+			MOUSEEVENTF_LEFTDOWN,
+			0,0,0,0
+		)
+	time.sleep(drag_time/2)
+	windll.user32.SetCursorPos(to_x,to_y)
+	time.sleep(drag_time/2)
+	windll.user32.mouse_event(
+			MOUSEEVENTF_LEFTUP | MOUSEEVENTF_MOVE, 
+			0,0,0,0
+		)
+	
 
 def mouse_pos_get():
 	pos = Point()
@@ -47,23 +65,23 @@ class HotKeyManager(object):
 			self.hotkeys.append({"key":letter_key, "f":function_pointer})
 	
 	def check(self):
-		for hotkey in self.hotkeys:
-			if (
-				(windll.user32.GetAsyncKeyState(KEYCODE_ALT))!=0 and
-				(windll.user32.GetAsyncKeyState(hotkey["key"]))!=0
-			):
-				thread.start_new_thread(hotkey["f"], ())
-				
-				while (
-						(windll.user32.GetAsyncKeyState(KEYCODE_ALT))!=0 and
-						(windll.user32.GetAsyncKeyState(hotkey["key"]))!=0
-					):pass
+		while True:
+			for hotkey in self.hotkeys:
+				if (
+					(windll.user32.GetAsyncKeyState(KEYCODE_ALT))!=0 and
+					(windll.user32.GetAsyncKeyState(hotkey["key"]))!=0
+				):
+					thread.start_new_thread(hotkey["f"], ())
+					
+					while (
+							(windll.user32.GetAsyncKeyState(KEYCODE_ALT))!=0 and
+							(windll.user32.GetAsyncKeyState(hotkey["key"]))!=0
+						):pass
 					
 
 
 	def start(self):
-		while True:
-			self.check()
+		thread.start_new_thread(self.check, ())
 			
 			
 	def test(self):
