@@ -1186,27 +1186,27 @@ EndFunc
 Func updateCapture()
    if ($screenloading[0]==0) Then;Not yet captured
 	  $screensave[0] = PixelGetColor(100,100)
-	  if ($screensave[0]==0x2d462d) Then ;we don't want to save loading screen;TODO REUPDATGE THESE
+	  if ($screensave[0]==0x142e3f) Then ;we don't want to save loading screen;TODO REUPDATGE THESE
 		 $screensave[0] = 0
 	  EndIf
 	  $screensave[1] = PixelGetColor(400,100)
-	  if ($screensave[1]==0x1f2727) Then
+	  if ($screensave[1]==0x3c3c61) Then
 		 $screensave[1] = 0
 	  EndIf
 	  $screensave[2] = PixelGetColor(700,100)
-	  if ($screensave[2]==0x2b332b) Then
+	  if ($screensave[2]==0x14385d) Then
 		 $screensave[2] = 0
 	  EndIf
 	  $screensave[3] = PixelGetColor(100,500)
-	  if ($screensave[3]==0x407140) Then
+	  if ($screensave[3]==0x387293) Then
 		 $screensave[3] = 0
 	  EndIf
 	  $screensave[4] = PixelGetColor(498,298)
-	  if ($screensave[4]==0xffffff) Then
+	  if ($screensave[4]==0x676767) Then
 		 $screensave[4] = 0
 	  EndIf
 	  $screensave[5] = PixelGetColor(700,500)
-	  if ($screensave[5]==0x4a4a52) Then
+	  if ($screensave[5]==0x3c334c) Then
 		 $screensave[5] = 0
 	  EndIf
    Else
