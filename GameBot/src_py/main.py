@@ -4,6 +4,7 @@ from PySide import QtCore #-- LGPL
 from PySide import QtGui
 from makinreusable.makinbutton import MakinButton
 from makinreusable.makinframe import MakinFrame
+from makinreusable.winfunction import HotKeyManager
 
 class MainGUI(QtGui.QMainWindow):
 	
@@ -12,7 +13,7 @@ class MainGUI(QtGui.QMainWindow):
 		self.show()
 		self.quit_command = quit_command
 		self.grinding = GrindingMakin()
-		
+		self.hotkey = HotKeyManager()
 		
 		self.build_display()
 		self.build_signal()
@@ -49,12 +50,22 @@ class MainGUI(QtGui.QMainWindow):
 		self.bt_calibrateposition.setText("calibrate position")
 		self.igr_main.addWidget(self.bt_calibrateposition, 1,0,1,1,QtCore.Qt.AlignTop)
 		
+		# self.bt_start_arena
+		self.bt_start_arena = MakinButton(self.fr_main)
+		self.bt_start_arena.setObjectName("bt_start_arena")
+		self.bt_start_arena.setText("start arena")
+		self.igr_main.addWidget(self.bt_start_arena, 2,0,1,1,QtCore.Qt.AlignTop)
+		
+		
 		
 		self.setCentralWidget(self.centralwidget)
 		QtCore.QMetaObject.connectSlotsByName(self)
 	
 	def build_signal(self):
 		self.bt_calibrateposition.clicked.connect(self.grinding.calibrate_position)
+		self.bt_start_arena.clicked.connect(self.grinding.start_arena)
+		self.hotkey.add("s", self.grinding.stop_arena)
+		self.hotkey.start()
 
 if (__name__=="__main__"):
 	app = QtGui.QApplication(sys.argv)

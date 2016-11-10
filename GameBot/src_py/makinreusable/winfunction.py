@@ -22,6 +22,7 @@ class Point(Structure):
 
 
 def mouse_click(x,y):
+	"""LEFT"""
 	windll.user32.SetCursorPos(x,y)
 	windll.user32.mouse_event(MOUSEEVENTF_LEFTDOWN, 0,0,0,0)
 	windll.user32.mouse_event(MOUSEEVENTF_LEFTUP, 0,0,0,0)
@@ -53,6 +54,7 @@ def mouse_pos_set(x,y):
 class HotKeyManager(object):
 	hotkeys = []
 	def __init__(self):
+		self.check_continue = False
 		pass
 	
 	def add(self, letter_key, function_pointer):
@@ -65,14 +67,15 @@ class HotKeyManager(object):
 			self.hotkeys.append({"key":letter_key, "f":function_pointer})
 	
 	def check(self):
-		while True:
+		self.check_continue = True
+		while self.check_continue:
 			for hotkey in self.hotkeys:
 				if (
 					(windll.user32.GetAsyncKeyState(KEYCODE_ALT))!=0 and
 					(windll.user32.GetAsyncKeyState(hotkey["key"]))!=0
 				):
 					thread.start_new_thread(hotkey["f"], ())
-					
+					print("HotKeyManager: "+str(hotkey["key"])+" triggered")
 					while (
 							(windll.user32.GetAsyncKeyState(KEYCODE_ALT))!=0 and
 							(windll.user32.GetAsyncKeyState(hotkey["key"]))!=0
@@ -82,6 +85,8 @@ class HotKeyManager(object):
 
 	def start(self):
 		thread.start_new_thread(self.check, ())
+	def stop(self):
+		self.check_continue = False
 			
 			
 	def test(self):
