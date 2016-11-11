@@ -113,15 +113,23 @@ class ImageManager(object):
 	
 	def is_in_team_adding(self, image_grab=None):
 		img = self.get_grab(image_grab)
-		#TODO:
+		c1 = img.getpixel((18,130))#the champion filter button
+		c2 = img.getpixel((936,511))
+		if (c1==c2):
+			if c1=(0x2b,0x2c,0x30) or c1=(0x0b,0x0b,0x0c):
+				return True
 		return False
 		#end is_in_team_adding
 	
 	
 	def is_in_team_adding_tier(self, tier, image_grab=None):
+		""" only check tier, if desired, check is_in_team_adding must be performed separately """
 		img = self.get_grab(image_grab)
-		#TODO:
+		if tier==3 and img.getpixel((108,559))==(0x38,0x38,0x38):
+			return True
+		#TODO: OTHER tier value
 		return False
+		#end is_in_team_adding_tier
 		
 	
 	
