@@ -485,7 +485,7 @@ EndFunc
 
 Func fightArenaMaintenanceWait()
    
-   $wait = 3000
+   $wait = 900 ;in seconds
    $delayval = TimerInit()
    Do
 	  MouseClickDrag("left",100,400,300,100)

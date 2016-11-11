@@ -7,6 +7,8 @@ MOUSEEVENTF_LEFTUP = 4
 MOUSEEVENTF_MOVE = 0x0001
 MOUSEEVENTF_ABSOLUTE = 0x8000
 
+KEYEVENTF_EXTENDEDKEY = 0x0001
+KEYEVENTF_KEYUP = 0x0002
 KEYCODE_LBUTTON = 0x01
 KEYCODE_RBUTTON = 0x02
 KEYCODE_MBUTTON = 0x04
@@ -14,6 +16,7 @@ KEYCODE_0 = 0x30
 KEYCODE_A = 0x41
 KEYCODE_ALT = 0xA4
 KEYCODE_F1 = 0x70
+KEYCODE_SPACE = 0x20
 
 class Point(Structure):
 	""" struct """
@@ -40,7 +43,14 @@ def mouse_click_drag(x,y, to_x, to_y, drag_time=0.5):
 			MOUSEEVENTF_LEFTUP | MOUSEEVENTF_MOVE, 
 			0,0,0,0
 		)
-	
+
+def keyboard_send(keyvalue):
+	"""keyvalue is key code or string letter/number"""
+	if type(keyvalue)==str:
+		keyvalue = ord(keyvalue.upper())
+	windll.user32.keybd_event(keyvalue,0,0,0)
+	windll.user32.keybd_event(keyvalue,0,KEYEVENTF_KEYUP,0)
+
 
 def mouse_pos_get():
 	pos = Point()
