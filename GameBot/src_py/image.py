@@ -99,6 +99,19 @@ class ImageManager(object):
 		#end is_menu_button_available
 	
 	
+	def is_in_game_home(self, image_grab=None):
+		"""check if in game home, is setting button available"""
+		img = self.get_grab(image_grab)
+		
+		if (img.getpixel((70,53))==(0x2b,0x2c,0x30) and #setting button
+			img.getpixel((94,53))==(0x2b,0x2c,0x30) and
+			img.getpixel((78,54))==(0x5f,0x5f,0x62) 
+		):
+			return True
+		return False
+		#end is_in_game_home
+	
+	
 	def is_in_fighting(self, image_grab=None):
 		""" is inside fighting match """
 		img  = self.get_grab(image_grab)
@@ -113,19 +126,27 @@ class ImageManager(object):
 		#end is_in_fighting
 	
 	
-	def is_in_team_adding(self, image_grab=None):
+	def is_in_team_adding(self, check_lightdark=False, image_grab=None):
+		""" check whether in team adding or not (True or False
+		if check_lightdark is True, return value will be "light", "dark", or boolean False
+		"""
 		img = self.get_grab(image_grab)
-		c1 = img.getpixel((18,130))#the champion filter button
-		c2 = img.getpixel((936,511))
+		c1 = img.getpixel((18,130))#the left bar team list
+		c2 = img.getpixel((936,511))#the champion filter button
 		if (c1==c2):
-			if c1==(0x2b,0x2c,0x30) or c1==(0x0b,0x0b,0x0c):
+			if (check_lightdark):
+				if c1==(0x2b,0x2c,0x30):
+					return "light"
+				elif c1==(0x0b,0x0b,0x0c):
+					return "dark"
+			elif c1==(0x2b,0x2c,0x30) or c1==(0x0b,0x0b,0x0c):
 				return True
 		return False
 		#end is_in_team_adding
 	
 	
 	def is_in_team_adding_tier(self, tier, image_grab=None):
-		""" only check tier, if desired, check is_in_team_adding must be performed separately """
+		""" only check tier (light), if desired, check is_in_team_adding must be performed separately """
 		img = self.get_grab(image_grab)
 		if tier==3 and img.getpixel((108,559))==(0x38,0x38,0x38):
 			return True
@@ -192,7 +213,64 @@ class ImageManager(object):
 		#end is_in_leaderboard
 	
 	
+	def is_in_chat(self, image_grab=None):
+		"""check if in chat """
+		img = self.get_grab(image_grab)
+		if img.getpixel((640,540))==(0x16,0xa1,0x1d):
+			if img.getpixel((15,540))==(0x2a,0x2d,0x31):
+				return True
+		return False
+		#end is_in_chat
 	
+	
+	def is_in_bluestack_home(self, image_grab=None):
+		"""check if in home / not in the application """
+		img = self.get_grab(image_grab)
+		plus_logo = self.pixel_search(img, 885,40,945,260, (0xf3,0x80,0x25))
+		if plus_logo!=False:
+			logo_x, logo_y = plus_logo
+			if (img.getpixel((logo_x+1, logo_y+1))==(0xf3,0x80,0x25) and
+				image_manager.pixel_search(
+					img, logo_x-10, logo_y-10, logo_x+50, logo_y+50,
+					(0xff,0xff,0xff)
+				)!=False
+			):
+				print("in bluestack home launcher")
+				return True
+		return False
+		#end is_in_bluestack_home
+	
+	
+	def is_in_bluestack_login(sel, image_grab=None):
+		"""check if in bluestack login error"""
+		img = self.get_grab(image_grab)
+		
+		check_again = False
+		if (self.get_dominant_color(img.getpixel((745,500)) )=="blue" and
+			self.get_dominant_color(img.getpixel((847,502)) )=="blue" and
+			img.getpixel((70,90,))==(0,0,0) and 
+			img.getpixel((290,90,))==(0,0,0) and 
+			img.getpixel((300,470,))==(0,0,0) and 
+			img.getpixel((860,470,))==(0,0,0)
+		):
+			time.sleep(2)
+			img = ImageGrab.grab()
+			check_again = True
+			
+		if (check_again and
+			self.get_dominant_color(img.getpixel((745,500)) )=="blue" and
+			self.get_dominant_color(img.getpixel((847,502)) )=="blue" and
+			img.getpixel((70,90,))==(0,0,0) and 
+			img.getpixel((290,90,))==(0,0,0) and 
+			img.getpixel((300,470,))==(0,0,0) and 
+			img.getpixel((860,470,))==(0,0,0)
+		):	
+			print("in bluestack home login error")
+			return True
+		return False
+		#end is_in_bluestack_login
+
+
 	def update_capture(self):
 		"""capture current image"""
 		self.screen_save = ImageGrab.grab()
@@ -209,7 +287,7 @@ class ImageManager(object):
 		signif[5] = img.getpixel(700,500)
 		self.screen_loading = img
 		print("loading captured")
-		print(self.signif)
+		print(signif)
 		#end update_capture_loading
 	
 	

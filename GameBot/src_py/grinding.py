@@ -185,12 +185,161 @@ class GrindingMakin(object):
 				if (sequence>20):
 					sequence = 0
 			
-			if image_manager.get_dominant_color_grab(144,541)=="red":
+			img = ImageGrab.grab()
+			if image_manager.get_dominant_color(img.getpixel((144,541)))=="red":
 				keyboard_send(KEYCODE_SPACE)
 			
+			
+			#indicates fight has ended
+			elif img.getpixel((640,540))==(0x02,0x5c,0):
+				if img.getpixel((0x16,0x1a,0x1b)):
+					stop = True
+					print("shall i press back button? (loading screen)")
+					time.sleep(2)
+					if (image_manager.is_in_team_adding()):
+						self.click_back()
+						time.sleep(10)
+			
+			#or chat bar has been licked
+			elif image_manager.is_in_chat(img):
+				stop = True
+				print("this is chat window")
+				time.sleep(1)
+				self.click_close_topright()
+				time.sleep(2)
+				self.click_menu_fight()
+				time.sleep(5)
+			
+			#or view reward
+			elif (	img.getpixel((480,270))==(0x2b,0x2c,0x30) and
+					img.getpixel((480,330))==(0x2b,0x2c,0x30)
+			):
+				print("view rewards ?(TODO)")
+				time.sleep(2)
+				keyboard_send("J")
+				time.sleep(2)
 				
+				img = ImageGrab.grab()
+				if (	img.getpixel((480,270))==(0x2b,0x2c,0x30) and
+						img.getpixel((480,330))==(0x2b,0x2c,0x30)
+				):
+					self.arena_fighting_time_start = time.clock()
+					if (
+						image_manager.get_dominant_color(
+								img.getpixel((142,510)))=="green" 
+						and
+						image_manager.get_dominant_color(
+								img.getpixel((390,510)))=="green" 
+						and
+						image_manager.get_dominant_color(
+								img.getpixel((800,510)))=="green"
+					):
+						print("view rewards now in fight menu arena")
+					if image_manager.get_dominant_color_grab(930,560)=="green":
+						stop = True
+						self.click_back()
+					else:
+						status = "view rewards that doesn't end yet"
+						stop = True
+						keyboard_send("J")
+						self.click_back()
+			
+			#if in alliance quest 
+			if img.getpixel((480,270))==(0,0,0):
+				if img.getpixel((838,366))==(0x2b,0x2c,0x30):
+					stop = True
+					print("alliance quest cuy")
+					time.sleep(2)
+					self.click_back()
+					time.sleep(8)
+			
+			#if in alliance quest empty
+			elif (
+				img.getpixel((384,142))==(0x1a,0x1a,0x1a) and
+				img.getpixel((551,142))==(0x1a,0x1a,0x1a) and
+				img.getpixel((504,142))!=(0x1a,0x1a,0x1a)
+			):
+				stop = True
+				print("empty alliance quest cuy")
+				time.sleep(2)
+				self.click_back()
+				time.sleep(8)
+			
+			
+			#if in event info
+			elif (
+				img.getpixel((50,100))==(0x29,0x2c,0x30) and
+				img.getpixel((50,500))==(0x29,0x2c,0x30) and
+				img.getpixel((900,100))==(0x29,0x2c,0x30) and
+				img.getpixel((900,500))==(0x29,0x2c,0x30) and
+				img.getpixel((939,61))==(0x6c,0x6e,0x71)	
+			):
+				stop =True
+				print("event board")
+				self.click_close_topright()
 				
-			#LINE593
+			#if in team adding
+			elif (
+				image_manager.is_in_team_adding(img)
+			):
+				print("team adding")
+				stop = True
+				if image_manager.is_in_team_adding(True, img)=="dark":
+					print("team adding dark")
+					time.sleep(1)
+					mouse_click(100,400)
+					time.sleep(2)
+				if (self.arena_tier==3 and 
+					image_manager.is_in_team_adding_tier(3)
+				):
+					print("in correct tier 3")
+				else:
+					time.sleep(1)
+					self.click_back()
+					time.sleep(7)
+			
+			#if in somewhere outside
+			#not yet implemented
+			
+			
+			#when blue stack error/game kick out to home
+			elif (
+				image_manager.is_in_bluestack_home(img) or 
+				image_manager.is_in_bluestack_login(img)
+			):
+				self.arena_allstop = 1
+				time.sleep(2)
+				mouse_click(175,613) #android home button
+				time.sleep(2)
+				mouse_click_drag(900,310,900,70, 1)#close app
+				time.sleep(2)
+				mouse_click(175,613) #android home button
+				time.sleep(2)
+				
+				#make sure scroll up most in launcher
+				repeat = 10
+				while repeat>0:
+					mouse_click_drag(500,100,500,550)
+					time.sleep(0.8)
+					repeat -= 1
+					#check if in upmost now
+					img = ImageGrab.grab() 
+					if (
+						img.getpixel((73,135))==(0xf3,0x80,0x25) and #search logo
+						img.getpixel((74,165))==(0xff,0xff,0xff) and #search logo
+						img.getpixel((914,150))==(0xff,0xff,0xff) and #plus logo
+						img.getpixel((935,147))==(0xf3,0x80,0x25) #plus logo
+					):
+						repeat = 0
+				
+				mouse_click(200,160)#mcoc game
+				time.sleep(10)
+				while (not image_manager.is_in_game_home()):
+					print("not yet")
+					time.sleep(1)
+				self.click_menu_fight()
+				time.sleep(2)
+				self.start_arena()
 		
 		#end arena_fight
 	
@@ -218,12 +367,26 @@ class GrindingMakin(object):
 		#end alliance_help
 
 
+	def click_close_topright(self):
+		"""click close chat button"""
+		mouse_click(943,52)
+		#end click_close_topright
+
+	def click_back(self):
+		"""click back button"""
+		mouse_click(57,55)
+		time.sleep(0.5)
+		mouse_click(57,55)
+		#end click_back
+
+
 	def click_menu(self,delay=1):
 		"""perform clickingthe menu button"""
 		mouse_click(190,58)#menu button
 		time.sleep(delay)
 		mouse_click(190,58)
 		time.sleep(delay)
+		#end click_menu
 
 
 	def click_menu_fight(self, delay=1):
@@ -234,3 +397,4 @@ class GrindingMakin(object):
 		"""
 		click_menu(delay)
 		mouse_click(270,132)#fight button
+		#end click_menu_fight
