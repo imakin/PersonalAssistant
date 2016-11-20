@@ -302,7 +302,7 @@ Func askForHelp()
 	  Local $blue = BitAND($helpbutton, 0x0000FF)
 	  if ($green > $red) Then
 		 if ($green > $blue) Then
-			Send("Q")
+			Send("q")
 			checkInsideFight()
 			Sleep(3000)
 		 Else
@@ -577,7 +577,7 @@ Func fightArena()
 	  Send("0")
 	  Sleep(1);
 	  if (Mod($seq, 4)==0) Then
-		 Send("K")
+		 Send("k")
 	  EndIf
 	  $seq = $seq + 1
 	  if ($seq>15) then
@@ -631,7 +631,7 @@ Func fightArena()
 		 if ($loading==0x2b2c30) Then
 			ToolTip("(view rewards) ?(TODO)", 1000,200)
 			Sleep(2000)
-			Send("J")
+			Send("j")
 			Sleep(2000)
 			
 			if (PixelGetColor(480,270)==0x2b2c30) Then
@@ -649,7 +649,7 @@ Func fightArena()
 				  Else
 					 $status = "view rewards that doesn't end yet"
 					 $stop = 1
-					 Send("J")
+					 Send("j")
 					 MouseClick("left", 57, 55); back
 					 Sleep(400)
 					 MouseClick("left", 57, 55); back000K0000K000 0K 0 0 0 0K 0K000
@@ -742,7 +742,7 @@ Func fightArena()
 				  MsgBox(0, "popup", "(somewhere outside for too long)", 2)
 				  $stop = 1
 				  Sleep(1000)
-				  Send("J")
+				  Send("j")
 				  Sleep(1000)
 				  MouseClick("left", 190, 58) ;menu
 				  Sleep(1000)
@@ -835,7 +835,7 @@ Func fight()
 	  Sleep(30);
 	  $seq = $seq + 1
 	  if (Mod($seq, 4)==0) Then
-		 Send("K")
+		 Send("k")
 	  EndIf
 	  if ($seq>12) then
 		 Send("{SPACE}")
@@ -852,19 +852,19 @@ Func fight()
 			if ($loading==0xc1c1c2) Then
 			   $stop = 1
 			   Sleep(3000)
-			   Send("J")
+			   Send("j")
 			EndIf
 		 ElseIf ($loading==0x07090c) Then
 			if (PixelGetColor(825,105)==0x2b2c30) Then
 			   $stop = 1
 			   Sleep(3000)
-			   Send("J")
+			   Send("j")
 			EndIf
 		 ;Elseif (PixelGetColor(486,310)==0xeeeeee) Then
 			;we're in loading  screen
 			;$stop = 1
 			;Sleep(3000)
-			;Send("J")
+			;Send("j")
 		 EndIf
 		 
 		 ;check if in event info
@@ -990,7 +990,7 @@ Func nextNode()
 			EndIf
 		 EndIf
 		 
-		 Send("J")
+		 Send("j")
 		 Sleep(200)
 		 $greendot = PixelSearch(80,100, 957, 530, 0x00f800)
 		 if (@error) Then
@@ -1021,7 +1021,7 @@ Func nextNode()
 		 EndIf
 	  
 	  Until IsArray($greendot);not(@error)
-	  Send("J")
+	  Send("j")
 	  
 	  if (getDominantColor(PixelGetColor(445,445))=="green" AND getDominantColor(PixelGetColor(530,346))=="green") Then
 		 ;Teleport
@@ -1071,7 +1071,7 @@ Func nextNode()
 	  
 	  fight()
 	  Sleep(4000)
-	  Send("J")
+	  Send("j")
    Until ($allstop==1)
 EndFunc
 
@@ -1364,7 +1364,7 @@ Func fightDuel()
 	  Send("0")
 	  Sleep(1);
 	  if (Mod($seq, 4)==0) Then
-		 Send("K")
+		 Send("k")
 	  EndIf
 	  $seq = $seq + 1
 	  if ($seq>15) then
