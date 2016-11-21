@@ -207,8 +207,11 @@ class GrindingMakin(object):
 						self.print_log("waiting to be in team adding")
 						self.arena_check_inside_fighting()
 						if image_manager.is_in_more_fight_to_go():
+							self.print_log("in more fight to go")
 							break
-						
+						if image_manager.is_in_find_match():
+							self.print_log("in find match")
+							break
 						time.sleep(1)
 				
 				#if in milestone info
