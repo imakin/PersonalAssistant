@@ -74,6 +74,53 @@ class ImageManager(object):
 		#end get_grab
 	
 	
+	def get_arena_target(self, image_grab=None):
+		"""
+		This is the method called to get arena tier target,
+		replace this method's image processing as needed
+		@return
+			the corresponding continue button position if found, 
+			or (-1,-1) if false
+		current: orb of agamoto dr strange
+		"""
+		#~ img = self.get_grab(image_grab)
+		#~ step = 15
+		#~ coltol = 50
+		#~ for y_code in range(300,380):
+			#~ for x_code in range(0,self.screen_width):
+				#~ if (
+					#~ self.is_color_similar(img.getpixel((x_code+0,y_code+0)),(204,138,48),coltol) and
+					#~ self.is_color_similar(img.getpixel((x_code+15,y_code+0)),(232,182,72),coltol) and
+					#~ self.is_color_similar(img.getpixel((x_code+30,y_code+0)),(251,245,253),coltol) and
+					#~ self.is_color_similar(img.getpixel((x_code+0,y_code+15)),(92,65,98),coltol) and
+					#~ self.is_color_similar(img.getpixel((x_code+15,y_code+15)),(153,135,175),coltol) and
+					#~ self.is_color_similar(img.getpixel((x_code+30,y_code+15)),(234,191,214),coltol) and
+					#~ self.is_color_similar(img.getpixel((x_code+0,y_code+30)),(92,63,93),coltol) and
+					#~ self.is_color_similar(img.getpixel((x_code+15,y_code+30)),(162,105,32),coltol) and
+					#~ self.is_color_similar(img.getpixel((x_code+30,y_code+30)),(12,3,3),coltol)
+				#~ ):
+					#~ return x_code+100,y_code+200
+		#~ return -1,-1
+		
+		"""
+		Crystal cornucopia
+		"""
+		img = self.get_grab(image_grab)
+		step = 20
+		coltol = 30
+		for y_code in range(315,350):
+			for x_code in range(0,self.screen_width):
+				if (
+					self.is_color_similar(img.getpixel((x_code+0,y_code+0)),(139,147,164),coltol) and
+					self.is_color_similar(img.getpixel((x_code+20,y_code+0)),(185,22,10),coltol) and
+					self.is_color_similar(img.getpixel((x_code+0,y_code+20)),(158,173,122),coltol) and
+					self.is_color_similar(img.getpixel((x_code+20,y_code+20)),(231,128,61),coltol)
+				):
+					return x_code,y_code+200
+		return -1,-1
+		#end get_arena_target
+
+	
 	def is_color_similar(self, colorA, colorB,tolerant=10):
 		"""check if color is similar, tolerant is the max difference """
 		if (

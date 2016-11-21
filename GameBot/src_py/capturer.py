@@ -80,6 +80,7 @@ class main(object):
 		
 		
 		code += "import time"+"\n"
+		code += "from makinreusable.winfunction import *"+"\n"
 		code += "a=test()"+"\n"
 		code += "print(3)"+"\n"
 		code += "time.sleep(2)"+"\n"
@@ -87,7 +88,10 @@ class main(object):
 		code += "time.sleep(2)"+"\n"
 		code += "print(1)"+"\n"
 		code += "time.sleep(3)"+"\n"
-		code += "print(a.is_something())"+"\n"
+		code += "c = a.is_something()"+"\n"
+		code += "print(c)"+"\n"
+		code += "if c!=(-1,-1):"+"\n"
+		code += tab(1)+"mouse_pos_set(c[0],c[1])"+"\n"
 		
 		f = open("captured_code.py", "w")
 		f.write(code)

@@ -69,146 +69,75 @@ class GrindingMakin(object):
 				if (not helping):
 					self.arena_matches -= 1 #make sure we keep trying in the next chance
 			self.print_log("done helping")
+			
 			self.arena_continue = True
 			if (not self.arena_allstop):
 				self.arena_check_inside_fighting()
 				time.sleep(0.5)
 				
-				#~ self.print_log("check if in fight room")
-				#~ if image_manager.is_in_fight_room():
-					#~ self.print_log("inside fight menu, not arena (first check)")
-					#~ mouse_click_drag(130,255,700,255)
-					#~ time.sleep(1)
-					#~ mouse_click_drag(130,255,700,255)
-					#~ time.sleep(0.5)
-					#~ mouse_click(500,446)
-					#~ while image_manager.is_in_arena_room()==(-1,-1):
-						#~ time.sleep(0.5)
-				
-				
-				if self.arena_tier==5:
-					mouse_click_drag(700,255,130,255,1)
+				if image_manager.is_in_fight_room():
+					self.print_log("we're in fight room, going to arena")
+					mouse_click_drag(130,255,700,255)#drag left most
+					time.sleep(1)
+					mouse_click_drag(130,255,700,255)
 					time.sleep(0.5)
-					mouse_click_drag(700,255,130,255,1)
-					time.sleep(0.5)
-				else:
-					if (self.arena_tier==3 and 
+					mouse_click(500,446)
+					while not image_manager.is_in_arena_room():
+						self.arena_check_inside_fighting()
+						self.print_log("waiting to be in arena room")
+						time.sleep(0.5)
+					
+				
+				if (self.arena_tier==3 and 
 						image_manager.is_in_team_adding() and
 						image_manager.is_in_team_adding_tier(3)
-					):
-						self.print_log("in correct team adding")
-					elif (
-							image_manager.get_dominant_color_grab(130,532)=="green" and
-							image_manager.get_dominant_color_grab(430,532)=="green" and
-							image_manager.get_dominant_color_grab(868,532)=="green"
-					):
-						self.print_log("no need to drag left most")
-						self.arena_check_inside_fighting()
-					else:
-						mouse_click_drag(130,255,700,255)#drag leftmost foolproof
-						self.arena_check_inside_fighting()
-						time.sleep(1.5)
-						mouse_click_drag(130,255,700,255)#drag leftmost foolproof
-				
-				self.arena_check_inside_fighting()
-				time.sleep(0.5)
-				self.arena_check_inside_fighting()
-				
-				#check if in fight menu, not arena menu
-				if (self.arena_tier==3 and 
-					image_manager.is_in_team_adding() and
-					image_manager.is_in_team_adding_tier(3)
 				):
-					self.print_log("in correct team adding when checking if in fight menu or arean")
-				elif (image_manager.get_dominant_color_grab(346,535)!="green" and
-					self.arena_tier!=5
-				):
-					self.print_log("inside fight menu, not arena")
-					mouse_click_drag(130,255,700,255)
-					time.sleep(0.4)
-					mouse_click_drag(130,255,700,255)
-					time.sleep(0.4)
-					self.click_fightroom_arena()
-					time.sleep(2)
-					wait = 10
-					while (wait>0 and 
-						image_manager.get_dominant_color_grab(435,525)!="green"
-					):
-						time.sleep(1)
-						wait -= 1
-						self.arena_check_inside_fighting()
+					self.print_log("in correct team adding")
 				
-				self.arena_check_inside_fighting()
-				
-				#check if currently in one of the 3 fights in a match
-				if image_manager.is_in_more_fight_to_go():
-					self.print_log("more fight to go")
-					self.status="more fight to go"
-					time.sleep(1)
-					mouse_click(200,200)
-					self.arena_fight()
-					self.arena_continue = False
-				
-				#self.arena_check_inside_fighting()
-				if self.arena_continue:
-					if self.arena_tier==2:
-						mouse_click(386,446)
-						time.sleep(5)
-						mouse_click(413,522)#double check
-						
-					elif self.arena_tier==3:
-						if (image_manager.is_in_team_adding() and 
-							image_manager.is_in_team_adding_tier(3)
-						):
-							self.print_log("on correct team adding tier 3, now to ask for help")
-							mouse_click(760,508)#double check
-							time.sleep(1)
-						else:
-							mouse_click(830,510)
-							wait = 10
-							while (wait>0 and not image_manager.is_in_team_adding()):
-								time.sleep(0.5)
-								self.print_log("wait entering arena %d"%wait)
-								wait -= 1
-							mouse_click(760,508)#double check
-					elif self.arena_tier==4:
-						mouse_click(433,522)
-						time.sleep(5)
-					elif self.arena_tier==5:
-						#arena special 5
-						if image_manager.is_in_fight_room():
-							self.print_log("inside fight menu, not arena")
-							mouse_click_drag(130,255,700,255)
-							time.sleep(1)
-							mouse_click_drag(130,255,700,255)
-							time.sleep(0.5)
-							mouse_click(500,446)
-							while image_manager.is_in_arena_room()==(-1,-1):
-								self.arena_check_inside_fighting()
-								self.print_log("waiting to be in arena room")
-								time.sleep(0.5)
-								
-						t4b_button = image_manager.get_arena_t4b_button()
-						while t4b_button==(-1,-1):
-							self.print_log("can't find t4b")
-							self.arena_check_inside_fighting()
-							mouse_click_drag(700,255,130,255)#drag right most
-							t4b_button = image_manager.get_arena_t4b_button()
-							time.sleep(0.5)
-						
-						mouse_click(t4b_button[0], t4b_button[1]+265)
-						
-						time.sleep(5)#waiting to be in team adding
-				
-				if (image_manager.is_in_team_adding()):
-					time.sleep(1)
 				else:
+					if image_manager.is_in_arena_room():
+						time.sleep(0.5)
+						selected = image_manager.get_arena_target()
+						left = 2
+						while selected==(-1,-1):
+							if left>0:
+								mouse_click_drag(130,255,700,255)#drag left most
+								left -= 1
+							else:
+								mouse_click_drag(700,255,130,255)#drag right most
+							time.sleep(0.5)
+							selected = image_manager.get_arena_target()
+							self.print_log("searching target")
+						
+						self.print_log("done searching target")
+						mouse_click(selected[0], selected[1])
+						time.sleep(2)
+					else:
+						self.print_log("not in arena room")
+						time.sleep(1)
+						self.click_menu_fight(1,True)
+						self.arena_continue = False
+					
+				if (self.arena_continue and image_manager.is_in_team_adding()):
+					time.sleep(1)
+				elif self.arena_continue:
+					loading_time = time.clock()
 					while not image_manager.is_in_team_adding():
 						self.print_log("waiting to be in team adding")
 						self.arena_check_inside_fighting()
 						if image_manager.is_in_more_fight_to_go():
+							self.print_log("we're in one of three fights")
 							break
-						
+						if image_manager.is_in_find_match():
+							self.print_log("we're in find match selecting opponent")
+							break
+						if time.clock()-loading_time>30:
+							self.print_log("too long waiting, canceling")
+							self.click_menu_fight(1,True)
+							self.arena_continue = False
+							break
+						else:
+							self.print_log("time out: %d"%int(time.clock()-loading_time))
 						time.sleep(1)
 				
 				#if in milestone info
@@ -221,7 +150,9 @@ class GrindingMakin(object):
 					self.arena_continue = False
 					self.arena_fight()
 				
-				self.arena_ask_for_help()
+				if self.arena_continue:
+					self.arena_ask_for_help()
+				
 				self.arena_check_inside_fighting()
 				
 				if self.arena_continue:
@@ -319,12 +250,18 @@ class GrindingMakin(object):
 			
 	
 	def arena_add_to_team(self):
+		mouse_click_drag(319,235,145,135)
+		time.sleep(0.5)
 		while ImageGrab.grab().getpixel((145,135))==(0x17,0x19,0x1a):
 			mouse_click_drag(319,235,145,135)
 			time.sleep(0.5)
+		mouse_click_drag(319,235,145,210)
+		time.sleep(0.5)
 		while ImageGrab.grab().getpixel((145,210))==(0x17,0x19,0x1a):
 			mouse_click_drag(319,235,145,210)
 			time.sleep(0.5)
+		mouse_click_drag(319,235,145,290)
+		time.sleep(0.5)
 		while ImageGrab.grab().getpixel((145,290))==(0x17,0x19,0x1a):
 			mouse_click_drag(319,235,145,290)
 			time.sleep(0.5)
@@ -623,7 +560,7 @@ class GrindingMakin(object):
 		#end click_menu
 
 
-	def click_menu_fight(self, delay=1):
+	def click_menu_fight(self, delay=1, until_finish=False):
 		"""
 		perform clicking the menu button then fight button to go to fight room
 		delay is the wait between clicks
@@ -631,6 +568,9 @@ class GrindingMakin(object):
 		"""
 		self.click_menu(delay)
 		mouse_click(270,132)#fight button
+		if until_finish:
+			while not image_manager.is_in_fight_room():
+				time.sleep(1)
 		#end click_menu_fight
 	
 	def click_fightroom_arena(self):
