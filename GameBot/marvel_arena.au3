@@ -268,7 +268,7 @@ Func startArena()
 				  ToolTip("arena upcoming success found button",1000,200)
 			      MouseClick("left",438,516)
 			   Else
-				  MouseClick("left", 674, 508);NORMAL POSITION
+				  MouseClick("left", 674, 508);click arena t4b NORMAL POSITION
 			   EndIf
 			   Sleep(5000);
 			EndIf

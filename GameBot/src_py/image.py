@@ -320,22 +320,54 @@ class ImageManager(object):
 		return False
 		#end is_in_bluestack_login
 
-		
-	def is_t4b_available(self, image_grab=None):
+
+	def is_in_arena_room(self, image_grab=None):
 		"""
-		check if in current view (arena room) there is arena t4b 
+		check if in arena room where we can choose which versus tier
+		scan for multiverse arena button inactive tab
 		"""
 		img = self.get_grab(image_grab)
-		step = 75
-		for y_code in range(0,self.screen_height):
+		step = 10
+		coltol = 10
+		for y_code in range(100,125):
 			for x_code in range(0,self.screen_width):
 				if (
-					self.is_color_similar(img.getpixel((x_code+0,y_code+0)),(56,58,70)) and
-					self.is_color_similar(img.getpixel((x_code+75,y_code+0)),(172,175,190)) and
-					self.is_color_similar(img.getpixel((x_code+0,y_code+75)),(50,53,62)) and
-					self.is_color_similar(img.getpixel((x_code+75,y_code+75)),(83,86,103)) and
-					self.is_color_similar(img.getpixel((x_code+0,y_code+150)),(38,38,46)) and
-					self.is_color_similar(img.getpixel((x_code+75,y_code+150)),(145,148,167))
+					self.is_color_similar(img.getpixel((x_code+0,y_code+0)),(63,63,63),coltol) and
+					self.is_color_similar(img.getpixel((x_code+10,y_code+0)),(63,63,63),coltol) and
+					self.is_color_similar(img.getpixel((x_code+20,y_code+0)),(63,63,63),coltol) and
+					self.is_color_similar(img.getpixel((x_code+30,y_code+0)),(63,63,63),coltol) and
+					self.is_color_similar(img.getpixel((x_code+40,y_code+0)),(63,63,63),coltol) and
+					self.is_color_similar(img.getpixel((x_code+0,y_code+10)),(64,64,64),coltol) and
+					self.is_color_similar(img.getpixel((x_code+10,y_code+10)),(109,109,109),coltol) and
+					self.is_color_similar(img.getpixel((x_code+20,y_code+10)),(215,215,215),coltol) and
+					self.is_color_similar(img.getpixel((x_code+30,y_code+10)),(85,85,85),coltol) and
+					self.is_color_similar(img.getpixel((x_code+40,y_code+10)),(67,67,67),coltol)
+				):
+					return True
+		return False
+
+		
+	def get_arena_t4b_button(self, image_grab=None):
+		"""
+		check if in current view (arena room) there is arena t4b 
+		return the place where the text "catalyst clash - basic"
+		"""
+		
+		img = self.get_grab(image_grab)
+		step = 10
+		coltol = 50
+		for y_code in range(226,264):
+			for x_code in range(0,self.screen_width):
+				if (
+					self.is_color_similar(img.getpixel((x_code+0,y_code+0)),(42,43,47),coltol) and
+					self.is_color_similar(img.getpixel((x_code+10,y_code+0)),(43,44,49),coltol) and
+					self.is_color_similar(img.getpixel((x_code+20,y_code+0)),(40,39,45),coltol) and
+					self.is_color_similar(img.getpixel((x_code+0,y_code+10)),(29,30,35),coltol) and
+					self.is_color_similar(img.getpixel((x_code+10,y_code+10)),(252,252,252),coltol) and
+					self.is_color_similar(img.getpixel((x_code+20,y_code+10)),(32,33,38),coltol) and
+					self.is_color_similar(img.getpixel((x_code+0,y_code+20)),(39,39,49),coltol) and
+					self.is_color_similar(img.getpixel((x_code+10,y_code+20)),(216,216,218),coltol) and
+					self.is_color_similar(img.getpixel((x_code+20,y_code+20)),(244,244,244),coltol)
 				):
 					return x_code,y_code
 		return -1,-1
@@ -348,18 +380,37 @@ class ImageManager(object):
 		"""
 		img = self.get_grab(image_grab)
 		step = 75
-		for y_code in range(0,self.screen_height):
-			for x_code in range(0,self.screen_width):
+		for y_code in range(141,327):
+			for x_code in range(100,self.screen_width):
 				if (
 					self.is_color_similar(img.getpixel((x_code+0,y_code+0)),(17,58,96),20) and
 					self.is_color_similar(img.getpixel((x_code+75,y_code+0)),(48,124,164),20) and
 					self.is_color_similar(img.getpixel((x_code+0,y_code+75)),(93,159,211),20) and
 					self.is_color_similar(img.getpixel((x_code+75,y_code+75)),(172,214,238),20)
 				):
-					return x_code,y_code
-		return -1,-1
+					return True
+		return False
 		#end is_in_fight_room
 
+	
+	def is_in_find_match(self, image_grab=None):
+		"""
+		in find match where we can choose enemy player and decide which 
+		is the most effective regarding score and difficulty.
+		searching for "find new match" button with 5 unit cost
+		"""
+		img = self.get_grab(image_grab)
+		step = 50
+		for y_code in range(0,self.screen_height):
+			for x_code in range(0,self.screen_width):
+				if (
+					self.is_color_similar(img.getpixel((x_code+0,y_code+0)),(54,121,53)) and
+					self.is_color_similar(img.getpixel((x_code+50,y_code+0)),(53,121,51)) and
+					self.is_color_similar(img.getpixel((x_code+100,y_code+0)),(154,188,153))
+				):
+					return True
+		return False
+		#end is_in_find_match
 	
 	def is_team_adding_need_help(self, image_grab=None):
 		"""check if in team adding we have champion to be asked for help"""

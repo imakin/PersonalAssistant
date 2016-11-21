@@ -75,7 +75,7 @@ class GrindingMakin(object):
 				time.sleep(0.5)
 				
 				#~ self.print_log("check if in fight room")
-				#~ if image_manager.is_in_fight_room()!=(-1,-1):
+				#~ if image_manager.is_in_fight_room():
 					#~ self.print_log("inside fight menu, not arena (first check)")
 					#~ mouse_click_drag(130,255,700,255)
 					#~ time.sleep(1)
@@ -176,7 +176,7 @@ class GrindingMakin(object):
 						time.sleep(5)
 					elif self.arena_tier==5:
 						#arena special 5
-						if image_manager.is_in_fight_room()!=(-1,-1):
+						if image_manager.is_in_fight_room():
 							self.print_log("inside fight menu, not arena")
 							mouse_click_drag(130,255,700,255)
 							time.sleep(1)
@@ -184,15 +184,21 @@ class GrindingMakin(object):
 							time.sleep(0.5)
 							mouse_click(500,446)
 							while image_manager.is_in_arena_room()==(-1,-1):
+								self.arena_check_inside_fighting()
+								self.print_log("waiting to be in arena room")
 								time.sleep(0.5)
 								
-							t4b_button = (-1,-1)
-							while t4b_button==(-1,-1):
-								mouse_click_drag(700,255,130,255)#drag right most
-								t4b_button = image_manager.is_t4b_available()
-								time.sleep(0.5)
-						self.arena_check_inside_fighting()
-						time.sleep(5)
+						t4b_button = image_manager.get_arena_t4b_button()
+						while t4b_button==(-1,-1):
+							self.print_log("can't find t4b")
+							self.arena_check_inside_fighting()
+							mouse_click_drag(700,255,130,255)#drag right most
+							t4b_button = image_manager.get_arena_t4b_button()
+							time.sleep(0.5)
+						
+						mouse_click(t4b_button[0], t4b_button[1]+265)
+						
+						time.sleep(5)#waiting to be in team adding
 				
 				if (image_manager.is_in_team_adding()):
 					time.sleep(1)
@@ -202,6 +208,7 @@ class GrindingMakin(object):
 						self.arena_check_inside_fighting()
 						if image_manager.is_in_more_fight_to_go():
 							break
+						
 						time.sleep(1)
 				
 				#if in milestone info
