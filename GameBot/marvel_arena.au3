@@ -13,10 +13,10 @@ HotKeySet("+!c", "calibrateWindow")
 HotKeySet("+!i", "showStatus")
 HotKeySet("+!u", "updateCaptureLoading")
 HotKeySet("+!e", "changeUpcomingToggle")
-$duel_target = "tejir"
+$duel_target = "TheJeff 2.0"
 $duel_is_officer = True
 $duel_target_pos = 1 ;in search position in 1st, 2nd, or 3rd
-Global $status="ngondek"
+Global $status="The Jeff "
 Global $savepixel = 0
 Global $screensave[6]
 $screensave[0] = 0

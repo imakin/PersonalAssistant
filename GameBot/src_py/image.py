@@ -9,6 +9,9 @@ class ImageManager(object):
 		#default image
 		self.screen_save = ImageGrab.grab()
 		self.screen_loading = self.screen_save
+		self.screen_size = (970,632)
+		self.screen_width = self.screen_size[0]
+		self.screen_height = self.screen_size[1]
 		pass
 	
 	def pixel_search(self, image_grab, x0, y0, x1, y1, color_tuple):
@@ -70,7 +73,54 @@ class ImageManager(object):
 		return image_grab
 		#end get_grab
 	
-					
+	
+	def is_color_similar(self, colorA, colorB,tolerant=10):
+		"""check if color is similar, tolerant is the max difference """
+		if (
+			abs(colorA[0]-colorB[0])<tolerant and
+			abs(colorA[1]-colorB[1])<tolerant and
+			abs(colorA[2]-colorB[2])<tolerant
+		):
+			return True
+		return False
+	
+	
+	def is_in_more_fight_to_go(self, image_grab=None):
+		"""
+		check if in one of the 3 fights room 
+		displaying score
+		"""
+		img = self.get_grab(image_grab)
+		
+		if (img.getpixel((235,338))==(0x2b,0x2c,0x30) and
+			img.getpixel((235,416))==(0x2b,0x2c,0x30) and
+			img.getpixel((235,500))==(0x2b,0x2c,0x30) and
+			img.getpixel((720,338))==(0x2b,0x2c,0x30) and
+			img.getpixel((720,416))==(0x2b,0x2c,0x30) and
+			img.getpixel((720,500))==(0x2b,0x2c,0x30) and
+			img.getpixel((490,338))!=(0x2b,0x2c,0x30) and
+			img.getpixel((490,416))!=(0x2b,0x2c,0x30) and
+			img.getpixel((490,500))!=(0x2b,0x2c,0x30)
+		):
+			return True
+		
+		if (img.getpixel((160,222))==(0x2b,0x2c,0x30) and 
+			img.getpixel((816,222))==(0x2b,0x2c,0x30)
+		):
+			#lose red, win green, 
+			lose = (0x72,0x1a,0x1a)
+			win = (0x26,0x55,0x2e)
+			left_result = img.getpixel((294,280))
+			right_result = img.getpixel((697,280))
+			if (
+				(left_result==win and right_result==lose) or
+				(left_result==lose and right_result==win)
+			):
+				return True
+		return False
+		#end is_in_more_fight_to_go
+		
+		
 	def is_energy_full(self, image_grab=None):
 		"""
 		check if energy bar is full, from the screenshot image_grab
@@ -241,7 +291,7 @@ class ImageManager(object):
 		#end is_in_bluestack_home
 	
 	
-	def is_in_bluestack_login(sel, image_grab=None):
+	def is_in_bluestack_login(self, image_grab=None):
 		"""check if in bluestack login error"""
 		img = self.get_grab(image_grab)
 		
@@ -269,6 +319,64 @@ class ImageManager(object):
 			return True
 		return False
 		#end is_in_bluestack_login
+
+		
+	def is_t4b_available(self, image_grab=None):
+		"""
+		check if in current view (arena room) there is arena t4b 
+		"""
+		img = self.get_grab(image_grab)
+		step = 75
+		for y_code in range(0,self.screen_height):
+			for x_code in range(0,self.screen_width):
+				if (
+					self.is_color_similar(img.getpixel((x_code+0,y_code+0)),(56,58,70)) and
+					self.is_color_similar(img.getpixel((x_code+75,y_code+0)),(172,175,190)) and
+					self.is_color_similar(img.getpixel((x_code+0,y_code+75)),(50,53,62)) and
+					self.is_color_similar(img.getpixel((x_code+75,y_code+75)),(83,86,103)) and
+					self.is_color_similar(img.getpixel((x_code+0,y_code+150)),(38,38,46)) and
+					self.is_color_similar(img.getpixel((x_code+75,y_code+150)),(145,148,167))
+				):
+					return x_code,y_code
+		return -1,-1
+		#end is_t4b_available
+		
+	def is_in_fight_room(self, image_grab=None):
+		"""
+		check if in fight room (menu->fight)
+		will check for alliance mode button
+		"""
+		img = self.get_grab(image_grab)
+		step = 75
+		for y_code in range(0,self.screen_height):
+			for x_code in range(0,self.screen_width):
+				if (
+					self.is_color_similar(img.getpixel((x_code+0,y_code+0)),(17,58,96),20) and
+					self.is_color_similar(img.getpixel((x_code+75,y_code+0)),(48,124,164),20) and
+					self.is_color_similar(img.getpixel((x_code+0,y_code+75)),(93,159,211),20) and
+					self.is_color_similar(img.getpixel((x_code+75,y_code+75)),(172,214,238),20)
+				):
+					return x_code,y_code
+		return -1,-1
+		#end is_in_fight_room
+
+	
+	def is_team_adding_need_help(self, image_grab=None):
+		"""check if in team adding we have champion to be asked for help"""
+		img = self.get_grab(image_grab)
+		if self.get_dominant_color(img.getpixel((260,175)))=="green":
+			return True
+		return False
+		#end is_team_adding_need_help
+
+	
+	def is_in_milestone_info(self, image_grab=None):
+		img = self.get_grab(image_grab)
+		if self.get_dominant_color(img.getpixel((934,55)))=="green":
+			if img.getpixel((492,337))==(0x2b,0x2c,0x30):
+				return True
+		return False
+		#is_in_milestone_info
 
 
 	def update_capture(self):
@@ -317,7 +425,7 @@ class ImageManager(object):
 	
 	def get_dominant_color_grab(self, x,y):
 		"""grab current screen then get dominant color in coordinate x,y"""
-		self.get_dominant_color(ImageGrab.grab().getpixel((x,y)))
+		return self.get_dominant_color(ImageGrab.grab().getpixel((x,y)))
 		#end get_dominant_color_grab
 	
 	

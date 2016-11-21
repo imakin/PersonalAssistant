@@ -25,7 +25,13 @@ class GrindingMakin(object):
 				self.status
 			)
 		else:
-			print(self.status)
+			self.print_log(self.status)
+	
+	
+	def print_log(self,text):
+		if (self.gui!=None):
+			self.gui.print_log(text)
+		print(text)
 	
 		
 	def calibrate_position(self):
@@ -53,7 +59,7 @@ class GrindingMakin(object):
 				##TODO: quest_play()
 			
 			
-			print("match number :", self.arena_matches)
+			self.print_log("match number :%d"% self.arena_matches)
 			
 			#helping
 			if (	self.arena_matches%self.arena_help==0 and 
@@ -61,12 +67,24 @@ class GrindingMakin(object):
 			):
 				helping = self.alliance_help()
 				if (not helping):
-					self.matches -= 1 #make sure we keep trying in the next chance
-			
+					self.arena_matches -= 1 #make sure we keep trying in the next chance
+			self.print_log("done helping")
 			self.arena_continue = True
 			if (not self.arena_allstop):
 				self.arena_check_inside_fighting()
 				time.sleep(0.5)
+				
+				#~ self.print_log("check if in fight room")
+				#~ if image_manager.is_in_fight_room()!=(-1,-1):
+					#~ self.print_log("inside fight menu, not arena (first check)")
+					#~ mouse_click_drag(130,255,700,255)
+					#~ time.sleep(1)
+					#~ mouse_click_drag(130,255,700,255)
+					#~ time.sleep(0.5)
+					#~ mouse_click(500,446)
+					#~ while image_manager.is_in_arena_room()==(-1,-1):
+						#~ time.sleep(0.5)
+				
 				
 				if self.arena_tier==5:
 					mouse_click_drag(700,255,130,255,1)
@@ -76,15 +94,15 @@ class GrindingMakin(object):
 				else:
 					if (self.arena_tier==3 and 
 						image_manager.is_in_team_adding() and
-						image.manager.is_in_team_adding_tier(3)
+						image_manager.is_in_team_adding_tier(3)
 					):
-						print("in correct team adding")
+						self.print_log("in correct team adding")
 					elif (
 							image_manager.get_dominant_color_grab(130,532)=="green" and
 							image_manager.get_dominant_color_grab(430,532)=="green" and
 							image_manager.get_dominant_color_grab(868,532)=="green"
 					):
-						print("no need to drag left most")
+						self.print_log("no need to drag left most")
 						self.arena_check_inside_fighting()
 					else:
 						mouse_click_drag(130,255,700,255)#drag leftmost foolproof
@@ -93,10 +111,217 @@ class GrindingMakin(object):
 						mouse_click_drag(130,255,700,255)#drag leftmost foolproof
 				
 				self.arena_check_inside_fighting()
-				time.sleep(1)
-				#LINE189
-			
+				time.sleep(0.5)
+				self.arena_check_inside_fighting()
+				
+				#check if in fight menu, not arena menu
+				if (self.arena_tier==3 and 
+					image_manager.is_in_team_adding() and
+					image_manager.is_in_team_adding_tier(3)
+				):
+					self.print_log("in correct team adding when checking if in fight menu or arean")
+				elif (image_manager.get_dominant_color_grab(346,535)!="green" and
+					self.arena_tier!=5
+				):
+					self.print_log("inside fight menu, not arena")
+					mouse_click_drag(130,255,700,255)
+					time.sleep(0.4)
+					mouse_click_drag(130,255,700,255)
+					time.sleep(0.4)
+					self.click_fightroom_arena()
+					time.sleep(2)
+					wait = 10
+					while (wait>0 and 
+						image_manager.get_dominant_color_grab(435,525)!="green"
+					):
+						time.sleep(1)
+						wait -= 1
+						self.arena_check_inside_fighting()
+				
+				self.arena_check_inside_fighting()
+				
+				#check if currently in one of the 3 fights in a match
+				if image_manager.is_in_more_fight_to_go():
+					self.print_log("more fight to go")
+					self.status="more fight to go"
+					time.sleep(1)
+					mouse_click(200,200)
+					self.arena_fight()
+					self.arena_continue = False
+				
+				#self.arena_check_inside_fighting()
+				if self.arena_continue:
+					if self.arena_tier==2:
+						mouse_click(386,446)
+						time.sleep(5)
+						mouse_click(413,522)#double check
+						
+					elif self.arena_tier==3:
+						if (image_manager.is_in_team_adding() and 
+							image_manager.is_in_team_adding_tier(3)
+						):
+							self.print_log("on correct team adding tier 3, now to ask for help")
+							mouse_click(760,508)#double check
+							time.sleep(1)
+						else:
+							mouse_click(830,510)
+							wait = 10
+							while (wait>0 and not image_manager.is_in_team_adding()):
+								time.sleep(0.5)
+								self.print_log("wait entering arena %d"%wait)
+								wait -= 1
+							mouse_click(760,508)#double check
+					elif self.arena_tier==4:
+						mouse_click(433,522)
+						time.sleep(5)
+					elif self.arena_tier==5:
+						#arena special 5
+						if image_manager.is_in_fight_room()!=(-1,-1):
+							self.print_log("inside fight menu, not arena")
+							mouse_click_drag(130,255,700,255)
+							time.sleep(1)
+							mouse_click_drag(130,255,700,255)
+							time.sleep(0.5)
+							mouse_click(500,446)
+							while image_manager.is_in_arena_room()==(-1,-1):
+								time.sleep(0.5)
+								
+							t4b_button = (-1,-1)
+							while t4b_button==(-1,-1):
+								mouse_click_drag(700,255,130,255)#drag right most
+								t4b_button = image_manager.is_t4b_available()
+								time.sleep(0.5)
+						self.arena_check_inside_fighting()
+						time.sleep(5)
+				
+				if (image_manager.is_in_team_adding()):
+					time.sleep(1)
+				else:
+					while not image_manager.is_in_team_adding():
+						self.print_log("waiting to be in team adding")
+						self.arena_check_inside_fighting()
+						if image_manager.is_in_more_fight_to_go():
+							break
+						time.sleep(1)
+				
+				#if in milestone info
+				if image_manager.is_in_milestone_info():
+					self.click_close_topright()
+					time.sleep(7)
+					self.arena_continue = False
+				
+				if image_manager.is_in_more_fight_to_go():
+					self.arena_continue = False
+					self.arena_fight()
+				
+				self.arena_ask_for_help()
+				self.arena_check_inside_fighting()
+				
+				if self.arena_continue:
+					self.arena_add_to_team()
+					self.arena_find_match()
+					self.arena_fight()
+				
+			#end if (not self.arena_allstop):
+			self.arena_stack -= 1
 		#end start_arena	
+	
+	
+	def arena_ask_for_help(self):
+		"""in team adding, ask for help if any"""
+		self.status="ask for help"
+		while image_manager.is_team_adding_need_help():
+			keyboard_send("Q")
+			time.sleep(3)
+		
+		#end arena_ask_for_help
+	
+	
+	def arena_find_match(self):
+		"""click find match and pick easy and good score enemy"""
+		self.status ="find match"
+		time.sleep(0.5)
+		mouse_click(109,547)
+		self.arena_check_inside_fighting()
+		time.sleep(4)
+		
+		img = ImageGrab.grab()
+		if image_manager.pixel_search(img,543,416,575,429,(0x31,0x9d,0x32))==False:
+			#highest is not easy, check if mid is easy
+			if image_manager.pixel_search(img,543,280,575,294,(0x31,0x9d,0x32))==False:
+				#mid is not easy
+				self.print_log("mid and high is not easy")
+				mouse_click(600,200)
+			else:
+				self.print_log("mid is easy")
+				mouse_click(600,320)
+		else:
+			self.print_log("highest is easy")
+			mouse_click(680,445)
+		
+		self.arena_check_inside_fighting()
+		time.sleep(3)
+		keyboard_send("0")
+		
+		self.arena_rearrange_team()
+		
+		#end arena_find_match
+		
+		
+	def arena_rearrange_team(self):
+		if not self.arena_continue:
+			return
+			
+		self.print_log("rearrange")
+		
+		#give time for manual rearrange
+		wait = 10
+		while wait>0:
+			self.print_log("wait %d"%(wait))
+			time.sleep(0.5)
+			self.arena_check_inside_fighting()
+			wait -= 1
+		time.sleep(3)
+		
+		clear = False
+		giveup = 10
+		should_check_again = True
+		
+		while should_check_again:
+			should_check_again = False
+			
+			if image_manager.get_dominant_color_grab(421,262)=="red":
+				mouse_click_drag(340,225,340,308)
+				time.sleep(2)
+				should_check_again = True
+				
+			if image_manager.get_dominant_color_grab(421,338)=="red":
+				mouse_click_drag(340,308,340,380)
+				time.sleep(2)
+				should_check_again = True
+			
+			if image_manager.get_dominant_color_grab(421,413)=="red":
+				mouse_click_drag(340,308,340,225)
+				time.sleep(2)
+				should_check_again = True	
+				
+			giveup -= 1
+			if giveup<1:
+				should_check_again = False
+		#end arena_rearrange_team
+			
+	
+	def arena_add_to_team(self):
+		while ImageGrab.grab().getpixel((145,135))==(0x17,0x19,0x1a):
+			mouse_click_drag(319,235,145,135)
+			time.sleep(0.5)
+		while ImageGrab.grab().getpixel((145,210))==(0x17,0x19,0x1a):
+			mouse_click_drag(319,235,145,210)
+			time.sleep(0.5)
+		while ImageGrab.grab().getpixel((145,290))==(0x17,0x19,0x1a):
+			mouse_click_drag(319,235,145,290)
+			time.sleep(0.5)
+		#end arena_add_to_team
 	
 	
 	def stop_arena(self):
@@ -107,7 +332,7 @@ class GrindingMakin(object):
 	def arena_check_inside_fighting(self):
 		"""check if inside fighting, if true, control fight """
 		if (image_manager.is_in_fighting()):
-			print("inside fight")
+			self.print_log("inside fight")
 			mouse_click(200,200)
 			mouse_click(200,200)
 			self.arena_continue = False
@@ -134,14 +359,14 @@ class GrindingMakin(object):
 			self.arena_fighting_stuck_seq += 1
 			if (self.arena_fighting_stuck_seq%100==0):
 				self.arena_fighting_stuck_seq = 1
-				print("check stuck")
+				self.print_log("check stuck")
 				if image_manager.is_stuck() and not(image_manager.is_in_fighting()):
-					print("check stuck: stuck detected")
+					self.print_log("check stuck: stuck detected")
 					self.status = "state fighting, stuck detected"
 					self.show_status()
 					image_manager.update_capture()
 					stop = True
-					print("i guess we're stuck")
+					self.print_log("i guess we're stuck")
 					time.sleep(2)
 					
 					#check if stuck in leaderboard
@@ -155,7 +380,7 @@ class GrindingMakin(object):
 					self.click_menu_fight()
 					time.sleep(10)
 				else:
-					print("check stuck: stuck undetected")
+					self.print_log("check stuck: stuck undetected")
 					self.status = "state fighting, stuck undetected"
 					self.show_status()
 				image_manager.update_capture()
@@ -163,9 +388,9 @@ class GrindingMakin(object):
 				
 				#check if too long fighting maybe someting is not right
 				if (time.clock()-self.arena_fighting_time_start)>300:
-					print("too long in fight")
+					self.print_log("too long in fight")
 					if (image_manager.is_in_fighting()):
-						print("guess the fight stuck bug")
+						self.print_log("guess the fight stuck bug")
 						#TODO: startover()
 						stop = True
 						self.arena_allstop = True
@@ -192,9 +417,9 @@ class GrindingMakin(object):
 			
 			#indicates fight has ended
 			elif img.getpixel((640,540))==(0x02,0x5c,0):
-				if img.getpixel((0x16,0x1a,0x1b)):
+				if img.getpixel((620,540))==(0x16,0x1a,0x1b):
 					stop = True
-					print("shall i press back button? (loading screen)")
+					self.print_log("shall i press back button? (loading screen)")
 					time.sleep(2)
 					if (image_manager.is_in_team_adding()):
 						self.click_back()
@@ -203,7 +428,7 @@ class GrindingMakin(object):
 			#or chat bar has been licked
 			elif image_manager.is_in_chat(img):
 				stop = True
-				print("this is chat window")
+				self.print_log("this is chat window")
 				time.sleep(1)
 				self.click_close_topright()
 				time.sleep(2)
@@ -214,7 +439,7 @@ class GrindingMakin(object):
 			elif (	img.getpixel((480,270))==(0x2b,0x2c,0x30) and
 					img.getpixel((480,330))==(0x2b,0x2c,0x30)
 			):
-				print("view rewards ?(TODO)")
+				self.print_log("view rewards ?(TODO)")
 				time.sleep(2)
 				keyboard_send("J")
 				time.sleep(2)
@@ -234,21 +459,23 @@ class GrindingMakin(object):
 						image_manager.get_dominant_color(
 								img.getpixel((800,510)))=="green"
 					):
-						print("view rewards now in fight menu arena")
+						self.print_log("view rewards now in fight menu arena")
 					if image_manager.get_dominant_color_grab(930,560)=="green":
 						stop = True
 						self.click_back()
+						time.sleep(1)
 					else:
 						status = "view rewards that doesn't end yet"
 						stop = True
 						keyboard_send("J")
 						self.click_back()
+						time.sleep(1)
 			
 			#if in alliance quest 
 			if img.getpixel((480,270))==(0,0,0):
 				if img.getpixel((838,366))==(0x2b,0x2c,0x30):
 					stop = True
-					print("alliance quest cuy")
+					self.print_log("alliance quest cuy")
 					time.sleep(2)
 					self.click_back()
 					time.sleep(8)
@@ -260,7 +487,7 @@ class GrindingMakin(object):
 				img.getpixel((504,142))!=(0x1a,0x1a,0x1a)
 			):
 				stop = True
-				print("empty alliance quest cuy")
+				self.print_log("empty alliance quest cuy")
 				time.sleep(2)
 				self.click_back()
 				time.sleep(8)
@@ -275,24 +502,24 @@ class GrindingMakin(object):
 				img.getpixel((939,61))==(0x6c,0x6e,0x71)	
 			):
 				stop =True
-				print("event board")
+				self.print_log("event board")
 				self.click_close_topright()
 				
 			#if in team adding
 			elif (
 				image_manager.is_in_team_adding(img)
 			):
-				print("team adding")
+				self.print_log("team adding")
 				stop = True
 				if image_manager.is_in_team_adding(True, img)=="dark":
-					print("team adding dark")
+					self.print_log("team adding dark")
 					time.sleep(1)
 					mouse_click(100,400)
 					time.sleep(2)
 				if (self.arena_tier==3 and 
 					image_manager.is_in_team_adding_tier(3)
 				):
-					print("in correct tier 3")
+					self.print_log("in correct tier 3")
 				else:
 					time.sleep(1)
 					self.click_back()
@@ -335,7 +562,7 @@ class GrindingMakin(object):
 				mouse_click(200,160)#mcoc game
 				time.sleep(10)
 				while (not image_manager.is_in_game_home()):
-					print("not yet")
+					self.print_log("not yet")
 					time.sleep(1)
 				self.click_menu_fight()
 				time.sleep(2)
@@ -347,7 +574,7 @@ class GrindingMakin(object):
 	def alliance_help(self):
 		"""send help for loyalty, return False if failed to perform"""
 		img = ImageGrab.grab()
-		
+		self.print_log("helping")
 		self.click_menu()
 		
 		if img.getpixel((400,92))==(0x59,0,0):
@@ -395,6 +622,10 @@ class GrindingMakin(object):
 		delay is the wait between clicks
 		delay after fight button clicked not performed here
 		"""
-		click_menu(delay)
+		self.click_menu(delay)
 		mouse_click(270,132)#fight button
 		#end click_menu_fight
+	
+	def click_fightroom_arena(self):
+		"""click arena button in fight room menus"""
+		mouse_click(500,446)

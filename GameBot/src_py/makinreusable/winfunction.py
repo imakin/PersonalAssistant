@@ -30,17 +30,24 @@ def mouse_click(x,y):
 	windll.user32.mouse_event(MOUSEEVENTF_LEFTDOWN, 0,0,0,0)
 	windll.user32.mouse_event(MOUSEEVENTF_LEFTUP, 0,0,0,0)
 
-def mouse_click_drag(x,y, to_x, to_y, drag_time=0.5):
+def mouse_click_drag(x,y, to_x, to_y, drag_time=2.5):
 	windll.user32.SetCursorPos(x,y)
 	windll.user32.mouse_event(
-			MOUSEEVENTF_LEFTDOWN,
+			MOUSEEVENTF_LEFTDOWN| MOUSEEVENTF_MOVE,
 			0,0,0,0
 		)
-	time.sleep(drag_time/2)
+	for repeat in range(0,10):
+		time.sleep(0.05)
+		
+		windll.user32.mouse_event(
+			MOUSEEVENTF_LEFTDOWN| MOUSEEVENTF_MOVE,# | MOUSEEVENTF_ABSOLUTE,
+			int((to_x-x)/10),
+			int((to_y-y)/10),
+			0,0
+		)
 	windll.user32.SetCursorPos(to_x,to_y)
-	time.sleep(drag_time/2)
 	windll.user32.mouse_event(
-			MOUSEEVENTF_LEFTUP | MOUSEEVENTF_MOVE, 
+			MOUSEEVENTF_LEFTUP | MOUSEEVENTF_MOVE,#| MOUSEEVENTF_ABSOLUTE, 
 			0,0,0,0
 		)
 
@@ -55,7 +62,7 @@ def keyboard_send(keyvalue):
 def mouse_pos_get():
 	pos = Point()
 	windll.user32.GetCursorPos(byref(pos))
-	return pos
+	return (pos.x, pos.y)
 
 def mouse_pos_set(x,y):
 	windll.user32.SetCursorPos(x,y)
