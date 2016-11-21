@@ -13,9 +13,10 @@ HotKeySet("+!c", "calibrateWindow")
 HotKeySet("+!i", "showStatus")
 HotKeySet("+!u", "updateCaptureLoading")
 HotKeySet("+!e", "changeUpcomingToggle")
-$duel_target = "robin agent"
+$duel_target = "TheJeff 2.0"
+$duel_is_officer = True
 $duel_target_pos = 1 ;in search position in 1st, 2nd, or 3rd
-Global $status="ngondek"
+Global $status="The Jeff "
 Global $savepixel = 0
 Global $screensave[6]
 $screensave[0] = 0
@@ -182,7 +183,7 @@ Func startArena()
 			EndIf
 		 EndIf
 		 checkInsideFight()
-		 Sleep(1000)
+		 Sleep(500)
 		 
 		 checkInsideFight()
 		 
@@ -230,7 +231,12 @@ Func startArena()
 				  Sleep(1000)
 			   Else
 				  MouseClick("left", 830, 510)
-				  Sleep(5000)
+				  Local $max = 10
+				  do 
+					 Sleep(500)
+					 ToolTip(StringFormat("wait entering arena %d",$max),1000,100)
+					 $max = $max - 1
+				  Until ($max<1 or isInTeamAdding())
 				  MouseClick("left", 760, 508);double check
 			   EndIf
 			Elseif ($arena_tier==4) Then ;arena tier 4
@@ -268,8 +274,12 @@ Func startArena()
 			EndIf
 		 EndIf
 		 
-		 checkInsideFight()
-		 Sleep(5000)
+		 if (isInTeamAdding()) Then
+			Sleep(1000)
+		 Else
+			checkInsideFight()
+			Sleep(5000)
+		 EndIf
 		 Local $current_arena_tier  = $arena_tier
 		 
 		 askForHelp()
@@ -714,7 +724,7 @@ Func fightArena()
 		 EndIf
 	  EndIf
 	  if (PixelGetColor(18, 130)==0x0b0b0c) Then ; the left bar team list
-		 if (PixelGetColor(936,511)==0x0b0b0c) Then ;the champion filter button
+		 if (PixelGetColor(936,511)==0x0b0b0c and not isInsideFight()) Then ;the champion filter button
 			ToolTip("Team adding Dark", 1000,200)
 			$stop = 1
 			Sleep(1000)
@@ -1281,11 +1291,11 @@ Func isInsideFight()
    if ($leftborder==0x222222 OR $leftborder==0x212121) Then
 	  if ($rightborder==0x222222 OR $rightborder==0x212121) Then
 		 if ((PixelGetColor(483,57)==0x9cba9b AND PixelGetColor(493,57)==0x9cba9b) AND getDominantColor(PixelGetColor(488,57))=="green") Then
-			return 1
+			return True
 		 EndIf
 	  EndIf
    EndIf
-   return 0
+   return False
 EndFunc
 
 
@@ -1304,19 +1314,31 @@ Func Duel()
 	  ;1nd search position
 		 MouseClick("left", 286,186)
 		 Sleep(1000)
-		 MouseClick("left", 445,156)
+		 if ($duel_is_officer) Then
+			MouseClick("left", 445,186)
+		 Else
+			MouseClick("left", 445,156)
+		 EndIf
 		 Sleep(4000)
 	  ElseIf ($duel_target_pos==2) Then
 	  ;2nd search position
 		 MouseClick("left", 286,246)
 		 Sleep(1000)
-		 MouseClick("left", 445,216)
+		 if ($duel_is_officer) Then
+			MouseClick("left", 445,246)
+		 Else
+			MouseClick("left", 445,216)
+		 EndIf
 		 Sleep(4000)
 	  ElseIf ($duel_target_pos==3) Then
 	  ;3rd search pos 
 		 MouseClick("left", 286,306)
 		 Sleep(1000)
-		 MouseClick("left", 445,256)
+		 if ($duel_is_officer) Then
+			MouseClick("left", 445,286)
+		 Else
+			MouseClick("left", 445,256)
+		 EndIf
 		 Sleep(4000)
 	  endif
 	  
@@ -1387,7 +1409,8 @@ Func fightDuel()
 			Sleep(2000)
 		 EndIf
 	  EndIf
-	  if (PixelGetColor(690,105)==0x161a1d AND PixelGetColor(800,105)==0x343434 AND PixelGetColor(841,105)==0x515151) Then
+	  ;SEARCH input bar, close button, resetbutton
+	  if (PixelGetColor(690,105)==0x161a1d AND PixelGetColor(944,54)==0x6d6f72 AND PixelGetColor(841,105)==0x515151) Then
 		 ;MsgBox(0, "done", "done", 1)
 		 ToolTip("done",1000,200)
 		 Sleep(2000)
