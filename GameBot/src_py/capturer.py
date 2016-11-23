@@ -35,6 +35,7 @@ class main(object):
 		#working
 		
 		code = ""
+		code += "from rescaler import cx,cy \n"
 		code += "from image import ImageManager \n\n"
 		code += "class test(ImageManager):"+"\n"
 		code += tab(1)+"def is_something(self, image_grab=None):"	+"\n"
@@ -56,7 +57,7 @@ class main(object):
 				r,g,b = img.getpixel((x,y))
 				code += (
 						tab(5)+
-						("self.is_color_similar(img.getpixel((x_code+%d,y_code+%d)),(%d,%d,%d),coltol) and" %
+						("self.is_color_similar(img.getpixel((x_code+cx(%d),y_code+cy(%d))),(%d,%d,%d),coltol) and" %
 							(x-x0,y-y0, r,g,b)
 						)+
 						"\n"
