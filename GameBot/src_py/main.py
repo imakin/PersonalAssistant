@@ -73,12 +73,64 @@ class MainGUI(QtGui.QMainWindow):
 		self.bt_arena_fight.setText("arena fight")
 		self.igr_main.addWidget(self.bt_arena_fight, 25,0,1,1,QtCore.Qt.AlignTop)
 		
+		# self.bt_arena_start_over
+		self.bt_arena_start_over = MakinButton(self.fr_main)
+		self.bt_arena_start_over.setObjectName("bt_arena_start_over")
+		self.bt_arena_start_over.setText("arena start over")
+		self.igr_main.addWidget(self.bt_arena_start_over, 26,0,1,1,QtCore.Qt.AlignTop)
 		
+		
+		#~ self.gv_graphic = QtGui.QGraphicsView(self.fr_main)
+		#~ self.gv_graphic.setObjectName("gv_graphic")
+		#~ self.igr_main.addWidget(self.gv_graphic, 27,0,1,1,QtCore.Qt.AlignTop)
+		
+		# self.bt_update_score
+		self.bt_update_score = MakinButton(self.fr_main)
+		self.bt_update_score.setObjectName("bt_update_score")
+		self.bt_update_score.setText("update score (alt-U)")
+		self.igr_main.addWidget(self.bt_update_score, 27,1,1,1,QtCore.Qt.AlignTop)
+		
+		
+		# self.bt_arena_standby
+		self.bt_arena_standby = MakinButton(self.fr_main)
+		self.bt_arena_standby.setObjectName("bt_arena_standby")
+		self.bt_arena_standby.setText("standby ")
+		self.igr_main.addWidget(self.bt_arena_standby, 27,0,1,1,QtCore.Qt.AlignTop)
 		
 		
 		self.setCentralWidget(self.centralwidget)
 		QtCore.QMetaObject.connectSlotsByName(self)
 	
+	
+	def update_score(self, image=None):
+		pass
+		"""from PIL import Image
+		self.print_log("updating score")
+		
+		self.scene = QtGui.QGraphicsScene(self)
+		self.gv_graphic.setScene(self.scene)
+		
+		#~ self.image = QtGui.QPixmap("./data/score.png")
+		#~ self.image.load("data/score.png")
+		
+		#~ self.scene.addPixmap(self.image)
+		#~ self.scene.addText("blablabla")
+		if image is not None:
+			self.scoreimage = image
+			#~ im = image
+			#~ data = im.tostring("raw","RGB")
+			#~ image = QtGui.QImage(data, im.size[0],  im.size[1], QtGui.QImage.Format_RGB32)
+			#~ pix = QtGui.QPixmap.fromImage(image)
+			#~ self.scene.addPixmap(pix)
+			#~ self.lb_status.setPixmap(pix)
+		else:
+			im = self.scoreimage
+			data = im.tostring("raw","RGB")
+			image = QtGui.QImage(data, im.size[0],  im.size[1], QtGui.QImage.Format_RGB32)
+			pix = QtGui.QPixmap.fromImage(image)
+			self.scene.addPixmap(pix)
+			self.lb_status.setPixmap(pix)
+		"""
 	
 	def signal_calibrate_position(self):
 		thread.start_new_thread(self.grinding.calibrate_position, ())
@@ -89,13 +141,23 @@ class MainGUI(QtGui.QMainWindow):
 	def signal_arena_fight(self):
 		thread.start_new_thread(self.grinding.arena_fight, ())
 	
+	def signal_arena_start_over(self):
+		thread.start_new_thread(self.grinding.arena_start_over, ())
+	
+	
+	def signal_arena_standby(self):
+		thread.start_new_thread(self.grinding.arena_standby, ())
 	
 	def build_signal(self):
 		self.bt_calibrateposition.clicked.connect(self.signal_calibrate_position)
 		self.bt_start_arena.clicked.connect(self.signal_start_arena)
 		self.bt_arena_fight.clicked.connect(self.signal_arena_fight)
+		self.bt_arena_start_over.clicked.connect(self.signal_arena_start_over)
+		self.bt_arena_standby.clicked.connect(self.signal_arena_standby)
+		#~ self.bt_update_score.clicked.connect(self.update_score)
 		
 		self.hotkey.add("s", self.grinding.stop_arena)
+		#~ self.hotkey.add("u", self.update_score)
 		self.hotkey.start()
 		#end build_signal
 	

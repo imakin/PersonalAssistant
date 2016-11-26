@@ -1,8 +1,9 @@
 """
 all reusable image processing should be here
 """
-
+from rescaler import cx,cy
 import ImageGrab
+import time
 
 class ImageManager(object):
 	def __init__(self):
@@ -74,6 +75,94 @@ class ImageManager(object):
 		#end get_grab
 	
 	
+	def get_arena_target(self, image_grab=None):
+		"""
+		This is the method called to get arena tier target,
+		replace this method's image processing as needed
+		@return
+			the corresponding continue button position if found, 
+			or (-1,-1) if false
+		"""
+		
+		desired = "any tier 3"
+		print("target is "+desired)
+		"""
+		current: orb of agamoto dr strange
+		"""
+		if (desired=="dr strange"):
+			img = self.get_grab(image_grab)
+			step = 15
+			coltol = 50
+			for y_code in range(300,380):
+				for x_code in range(0,self.screen_width):
+					if (
+						self.is_color_similar(img.getpixel((x_code+0,y_code+0)),(204,138,48),coltol) and
+						self.is_color_similar(img.getpixel((x_code+15,y_code+0)),(232,182,72),coltol) and
+						self.is_color_similar(img.getpixel((x_code+30,y_code+0)),(251,245,253),coltol) and
+						self.is_color_similar(img.getpixel((x_code+0,y_code+15)),(92,65,98),coltol) and
+						self.is_color_similar(img.getpixel((x_code+15,y_code+15)),(153,135,175),coltol) and
+						self.is_color_similar(img.getpixel((x_code+30,y_code+15)),(234,191,214),coltol) and
+						self.is_color_similar(img.getpixel((x_code+0,y_code+30)),(92,63,93),coltol) and
+						self.is_color_similar(img.getpixel((x_code+15,y_code+30)),(162,105,32),coltol) and
+						self.is_color_similar(img.getpixel((x_code+30,y_code+30)),(12,3,3),coltol)
+					):
+						return x_code+100,y_code+200
+			return -1,-1
+		
+		elif desired=="cornucopia":
+			"""
+			Crystal cornucopia
+			"""
+			img = self.get_grab(image_grab)
+			step = 20
+			coltol = 30
+			for y_code in range(315,350):
+				for x_code in range(0,self.screen_width):
+					if (
+						self.is_color_similar(img.getpixel((x_code+0,y_code+0)),(139,147,164),coltol) and
+						self.is_color_similar(img.getpixel((x_code+20,y_code+0)),(185,22,10),coltol) and
+						self.is_color_similar(img.getpixel((x_code+0,y_code+20)),(158,173,122),coltol) and
+						self.is_color_similar(img.getpixel((x_code+20,y_code+20)),(231,128,61),coltol)
+					):
+						return x_code,y_code+200
+			return -1,-1
+		
+		elif desired=="any tier 3":
+			"""for any tier 3, search for 1v1 and calculate tier 3's continue button"""
+			img = self.get_grab(image_grab)
+			step = 10
+			coltol = 30
+			for y_code in range(cy(220),cy(240)):
+				for x_code in range(cx(0),cx(100)):
+					if (
+						self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(0))),(199,169,62),coltol) and
+						self.is_color_similar(img.getpixel((x_code+cx(10),y_code+cy(0))),(219,148,79),coltol) and
+						self.is_color_similar(img.getpixel((x_code+cx(20),y_code+cy(0))),(207,48,15),coltol) and
+						self.is_color_similar(img.getpixel((x_code+cx(30),y_code+cy(0))),(67,11,6),coltol) and
+						self.is_color_similar(img.getpixel((x_code+cx(40),y_code+cy(0))),(51,11,19),coltol) and
+						self.is_color_similar(img.getpixel((x_code+cx(50),y_code+cy(0))),(37,16,32),coltol) and
+						self.is_color_similar(img.getpixel((x_code+cx(60),y_code+cy(0))),(45,22,57),coltol) and
+						self.is_color_similar(img.getpixel((x_code+cx(70),y_code+cy(0))),(73,47,128),coltol) and
+						self.is_color_similar(img.getpixel((x_code+cx(80),y_code+cy(0))),(43,34,70),coltol) and
+						self.is_color_similar(img.getpixel((x_code+cx(90),y_code+cy(0))),(80,106,214),coltol) and
+						self.is_color_similar(img.getpixel((x_code+cx(100),y_code+cy(0))),(162,144,211),coltol) and
+						self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(10))),(190,166,155),coltol) and
+						self.is_color_similar(img.getpixel((x_code+cx(10),y_code+cy(10))),(233,225,216),coltol) and
+						self.is_color_similar(img.getpixel((x_code+cx(20),y_code+cy(10))),(183,165,147),coltol) and
+						self.is_color_similar(img.getpixel((x_code+cx(30),y_code+cy(10))),(253,253,253),coltol) and
+						self.is_color_similar(img.getpixel((x_code+cx(40),y_code+cy(10))),(198,185,191),coltol) and
+						self.is_color_similar(img.getpixel((x_code+cx(50),y_code+cy(10))),(179,164,175),coltol) and
+						self.is_color_similar(img.getpixel((x_code+cx(60),y_code+cy(10))),(139,114,137),coltol) and
+						self.is_color_similar(img.getpixel((x_code+cx(70),y_code+cy(10))),(252,250,251),coltol) and
+						self.is_color_similar(img.getpixel((x_code+cx(80),y_code+cy(10))),(197,192,221),coltol) and
+						self.is_color_similar(img.getpixel((x_code+cx(90),y_code+cy(10))),(126,143,253),coltol) and
+						self.is_color_similar(img.getpixel((x_code+cx(100),y_code+cy(10))),(210,189,254),coltol)
+					):
+						return x_code+cx(730),y_code+cy(300)
+			return -1,-1
+		#end get_arena_target
+
+	
 	def is_color_similar(self, colorA, colorB,tolerant=10):
 		"""check if color is similar, tolerant is the max difference """
 		if (
@@ -82,6 +171,46 @@ class ImageManager(object):
 			abs(colorA[2]-colorB[2])<tolerant
 		):
 			return True
+		return False
+	
+	
+	def is_in_rearrange_team(self, image_grab=None):
+		"""
+		check if in rearrange team, looking for opponent (i) button
+		"""
+		img = self.get_grab(image_grab)
+		step = 5
+		coltol = 10
+		for y_code in range(167,200):
+			for x_code in range(812,850):
+				if (
+					self.is_color_similar(img.getpixel((x_code+0,y_code+0)),(43,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+5,y_code+0)),(43,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+10,y_code+0)),(43,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+15,y_code+0)),(43,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+20,y_code+0)),(43,45,49),coltol) and
+					self.is_color_similar(img.getpixel((x_code+0,y_code+5)),(43,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+5,y_code+5)),(90,91,91),coltol) and
+					self.is_color_similar(img.getpixel((x_code+10,y_code+5)),(78,78,80),coltol) and
+					self.is_color_similar(img.getpixel((x_code+15,y_code+5)),(101,101,101),coltol) and
+					self.is_color_similar(img.getpixel((x_code+20,y_code+5)),(44,45,49),coltol) and
+					self.is_color_similar(img.getpixel((x_code+0,y_code+10)),(43,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+5,y_code+10)),(101,101,101),coltol) and
+					self.is_color_similar(img.getpixel((x_code+10,y_code+10)),(54,55,58),coltol) and
+					self.is_color_similar(img.getpixel((x_code+15,y_code+10)),(101,101,101),coltol) and
+					self.is_color_similar(img.getpixel((x_code+20,y_code+10)),(101,101,101),coltol) and
+					self.is_color_similar(img.getpixel((x_code+0,y_code+15)),(43,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+5,y_code+15)),(101,101,101),coltol) and
+					self.is_color_similar(img.getpixel((x_code+10,y_code+15)),(65,65,68),coltol) and
+					self.is_color_similar(img.getpixel((x_code+15,y_code+15)),(101,101,101),coltol) and
+					self.is_color_similar(img.getpixel((x_code+20,y_code+15)),(100,100,100),coltol) and
+					self.is_color_similar(img.getpixel((x_code+0,y_code+20)),(43,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+5,y_code+20)),(75,76,78),coltol) and
+					self.is_color_similar(img.getpixel((x_code+10,y_code+20)),(87,87,89),coltol) and
+					self.is_color_similar(img.getpixel((x_code+15,y_code+20)),(95,95,95),coltol) and
+					self.is_color_similar(img.getpixel((x_code+20,y_code+20)),(43,44,48),coltol)
+				):
+					return True
 		return False
 	
 	
@@ -249,6 +378,33 @@ class ImageManager(object):
 			return False
 		return True
 		#end is_loading
+	
+	
+	def is_in_popup(self, image_grab=None):
+		"""
+		is_in_leaderboard, is_in_chat, etc has close button
+		this method detect if there are any popup that has close button, 
+		returns coordinate of the close button or -1,-1
+		"""
+		img = self.get_grab(image_grab)
+		step = 10
+		coltol = 10
+		for y_code in range(cy(15),cy(60)):
+			for x_code in range(cx(910),cx(950)):
+				if (
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(0))),(41,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(10),y_code+cy(0))),(41,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(20),y_code+cy(0))),(41,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(10))),(41,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(10),y_code+cy(10))),(108,110,113),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(20),y_code+cy(10))),(107,109,112),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(20))),(45,48,52),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(10),y_code+cy(20))),(107,109,112),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(20),y_code+cy(20))),(108,110,113),coltol)
+				):
+					return x_code+cx(15),y_code+cy(15)
+		return -1,-1
+		#end is_in_popup
 	
 	
 	def is_in_leaderboard(self, image_grab=None):

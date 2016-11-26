@@ -35,6 +35,7 @@ class main(object):
 		#working
 		
 		code = ""
+		code += "from rescaler import cx,cy \n"
 		code += "from image import ImageManager \n\n"
 		code += "class test(ImageManager):"+"\n"
 		code += tab(1)+"def is_something(self, image_grab=None):"	+"\n"
@@ -56,7 +57,7 @@ class main(object):
 				r,g,b = img.getpixel((x,y))
 				code += (
 						tab(5)+
-						("self.is_color_similar(img.getpixel((x_code+%d,y_code+%d)),(%d,%d,%d),coltol) and" %
+						("self.is_color_similar(img.getpixel((x_code+cx(%d),y_code+cy(%d))),(%d,%d,%d),coltol) and" %
 							(x-x0,y-y0, r,g,b)
 						)+
 						"\n"
@@ -80,6 +81,7 @@ class main(object):
 		
 		
 		code += "import time"+"\n"
+		code += "from makinreusable.winfunction import *"+"\n"
 		code += "a=test()"+"\n"
 		code += "print(3)"+"\n"
 		code += "time.sleep(2)"+"\n"
@@ -87,7 +89,10 @@ class main(object):
 		code += "time.sleep(2)"+"\n"
 		code += "print(1)"+"\n"
 		code += "time.sleep(3)"+"\n"
-		code += "print(a.is_something())"+"\n"
+		code += "c = a.is_something()"+"\n"
+		code += "print(c)"+"\n"
+		code += "if c!=(-1,-1):"+"\n"
+		code += tab(1)+"mouse_pos_set(c[0],c[1])"+"\n"
 		
 		f = open("captured_code.py", "w")
 		f.write(code)
