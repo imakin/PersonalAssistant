@@ -41,8 +41,8 @@ def mouse_click_drag(x,y, to_x, to_y, drag_time=2.5):
 		
 		windll.user32.mouse_event(
 			MOUSEEVENTF_LEFTDOWN| MOUSEEVENTF_MOVE,# | MOUSEEVENTF_ABSOLUTE,
-			int((to_x-x)/20),
-			int((to_y-y)/20),
+			int((to_x-x)/18),
+			int((to_y-y)/18),
 			0,0
 		)
 	windll.user32.SetCursorPos(to_x,to_y)
@@ -50,6 +50,7 @@ def mouse_click_drag(x,y, to_x, to_y, drag_time=2.5):
 			MOUSEEVENTF_LEFTUP | MOUSEEVENTF_MOVE,#| MOUSEEVENTF_ABSOLUTE, 
 			0,0,0,0
 		)
+	time.sleep(0.1)
 
 def keyboard_send(keyvalue):
 	"""keyvalue is key code or string letter/number"""

@@ -37,7 +37,16 @@ class GrindingMakin(object):
 		
 	def calibrate_position(self):
 		win = image_manager.find_bluestack_logo()
-		mouse_click_drag(win[0],win[1], 30, 12)
+		self.print_log("found bluestack logo in (%d,%d)"%(win[0],win[1]))
+		if (win[0]==30 and win[1]==12):
+			self.print_log("window position is good")
+		elif (win[0]<=30 and win[1]<=12):
+			self.print_log("window slightly missplaced")
+			mouse_click_drag(win[0],win[1], 60, 42)
+			mouse_click_drag(60,42, 30, 12)
+		else:
+			self.print_log("window will be replaced")
+			mouse_click_drag(win[0],win[1], 30, 12)
 		#end calibrate_position
 
 	def start_arena(self):
@@ -394,124 +403,124 @@ class GrindingMakin(object):
 			if image_manager.get_dominant_color(img.getpixel((144,541)))=="red":
 				keyboard_send(KEYCODE_SPACE)
 			
-			
-			#indicates fight has ended
-			elif img.getpixel((640,540))==(0x02,0x5c,0):
-				if img.getpixel((620,540))==(0x16,0x1a,0x1b):
-					stop = True
-					self.print_log("shall i press back button? (loading screen)")
-					time.sleep(2)
-					if (image_manager.is_in_team_adding()):
-						self.click_back()
-						time.sleep(10)
-			
-			#or chat bar has been licked
-			elif image_manager.is_in_chat(img):
-				stop = True
-				self.print_log("this is chat window")
-				time.sleep(1)
-				self.click_close_topright()
-				time.sleep(2)
-				self.click_menu_fight()
-				time.sleep(5)
-			
-			#or view reward
-			elif (	img.getpixel((480,270))==(0x2b,0x2c,0x30) and
-					img.getpixel((480,330))==(0x2b,0x2c,0x30)
-			):
-				self.print_log("view rewards ?(TODO)")
-				time.sleep(2)
-				keyboard_send("J")
-				time.sleep(2)
+			if not image_manager.is_in_fighting(img):
+				#indicates fight has ended
+				if img.getpixel((640,540))==(0x02,0x5c,0):
+					if img.getpixel((620,540))==(0x16,0x1a,0x1b):
+						stop = True
+						self.print_log("shall i press back button? (loading screen)")
+						time.sleep(2)
+						if (image_manager.is_in_team_adding()):
+							self.click_back()
+							time.sleep(10)
 				
-				img = ImageGrab.grab()
-				if (	img.getpixel((480,270))==(0x2b,0x2c,0x30) and
+				#or chat bar has been licked
+				elif image_manager.is_in_chat(img):
+					stop = True
+					self.print_log("this is chat window")
+					time.sleep(1)
+					self.click_close_topright()
+					time.sleep(2)
+					self.click_menu_fight()
+					time.sleep(5)
+				
+				#or view reward
+				elif (	img.getpixel((480,270))==(0x2b,0x2c,0x30) and
 						img.getpixel((480,330))==(0x2b,0x2c,0x30)
 				):
-					self.arena_fighting_time_start = time.clock()
-					if (
-						image_manager.get_dominant_color(
-								img.getpixel((142,510)))=="green" 
-						and
-						image_manager.get_dominant_color(
-								img.getpixel((390,510)))=="green" 
-						and
-						image_manager.get_dominant_color(
-								img.getpixel((800,510)))=="green"
+					self.print_log("view rewards ?(TODO)")
+					time.sleep(2)
+					keyboard_send("J")
+					time.sleep(2)
+					
+					img = ImageGrab.grab()
+					if (	img.getpixel((480,270))==(0x2b,0x2c,0x30) and
+							img.getpixel((480,330))==(0x2b,0x2c,0x30)
 					):
-						self.print_log("view rewards now in fight menu arena")
-					if image_manager.get_dominant_color_grab(930,560)=="green":
-						self.print_log("view rewards now i used to click back")
+						self.arena_fighting_time_start = time.clock()
+						if (
+							image_manager.get_dominant_color(
+									img.getpixel((142,510)))=="green" 
+							and
+							image_manager.get_dominant_color(
+									img.getpixel((390,510)))=="green" 
+							and
+							image_manager.get_dominant_color(
+									img.getpixel((800,510)))=="green"
+						):
+							self.print_log("view rewards now in fight menu arena")
+						if image_manager.get_dominant_color_grab(930,560)=="green":
+							self.print_log("view rewards now i used to click back")
+							stop = True
+							#~ self.click_back()
+							time.sleep(1)
+						else:
+							status = "view rewards that doesn't end yet"
+							stop = True
+							keyboard_send("J")
+							self.click_back()
+							time.sleep(1)
+				
+				#if in alliance quest 
+				if img.getpixel((480,270))==(0,0,0):
+					if img.getpixel((838,366))==(0x2b,0x2c,0x30):
 						stop = True
-						#~ self.click_back()
-						time.sleep(1)
-					else:
-						status = "view rewards that doesn't end yet"
-						stop = True
-						keyboard_send("J")
+						self.print_log("alliance quest cuy")
+						time.sleep(2)
 						self.click_back()
-						time.sleep(1)
-			
-			#if in alliance quest 
-			if img.getpixel((480,270))==(0,0,0):
-				if img.getpixel((838,366))==(0x2b,0x2c,0x30):
+						time.sleep(8)
+				
+				#if in alliance quest empty
+				elif (
+					img.getpixel((384,142))==(0x1a,0x1a,0x1a) and
+					img.getpixel((551,142))==(0x1a,0x1a,0x1a) and
+					img.getpixel((504,142))!=(0x1a,0x1a,0x1a)
+				):
 					stop = True
-					self.print_log("alliance quest cuy")
+					self.print_log("empty alliance quest cuy")
 					time.sleep(2)
 					self.click_back()
 					time.sleep(8)
-			
-			#if in alliance quest empty
-			elif (
-				img.getpixel((384,142))==(0x1a,0x1a,0x1a) and
-				img.getpixel((551,142))==(0x1a,0x1a,0x1a) and
-				img.getpixel((504,142))!=(0x1a,0x1a,0x1a)
-			):
-				stop = True
-				self.print_log("empty alliance quest cuy")
-				time.sleep(2)
-				self.click_back()
-				time.sleep(8)
-			
-			elif self.check_popup_close():
-				pass
-			#if in event info
-			elif (
-				img.getpixel((50,100))==(0x29,0x2c,0x30) and
-				img.getpixel((50,500))==(0x29,0x2c,0x30) and
-				img.getpixel((900,100))==(0x29,0x2c,0x30) and
-				img.getpixel((900,500))==(0x29,0x2c,0x30) and
-				img.getpixel((939,61))==(0x6c,0x6e,0x71)	
-			):
-				stop =True
-				self.print_log("event board")
-				self.click_close_topright()
 				
-			#if in team adding
-			elif (
-				image_manager.is_in_team_adding(img)
-			):
-				self.print_log("team adding")
-				stop = True
-				if image_manager.is_in_team_adding(True, img)=="dark":
-					self.print_log("team adding dark")
-					time.sleep(1)
-					mouse_click(100,400)
-					time.sleep(2)
-				if (self.arena_tier==3 and 
-					image_manager.is_in_team_adding_tier(3)
+				elif self.check_popup_close():
+					pass
+				#if in event info
+				elif (
+					img.getpixel((50,100))==(0x29,0x2c,0x30) and
+					img.getpixel((50,500))==(0x29,0x2c,0x30) and
+					img.getpixel((900,100))==(0x29,0x2c,0x30) and
+					img.getpixel((900,500))==(0x29,0x2c,0x30) and
+					img.getpixel((939,61))==(0x6c,0x6e,0x71)	
 				):
-					self.print_log("in correct tier 3")
-				else:
-					time.sleep(1)
+					stop =True
+					self.print_log("event board")
+					self.click_close_topright()
+					
+				#if in team adding
+				elif (
+					image_manager.is_in_team_adding(img)
+				):
+					self.print_log("team adding")
+					stop = True
+					if image_manager.is_in_team_adding(True, img)=="dark":
+						self.print_log("team adding dark")
+						time.sleep(1)
+						mouse_click(100,400)
+						time.sleep(2)
 					if (self.arena_tier==3 and 
 						image_manager.is_in_team_adding_tier(3)
 					):
-						self.print_log("in correct tier 3 on 2nd view")
+						self.print_log("in correct tier 3")
 					else:
-						self.print_log("afraid it's not correct tier")
-						self.click_back()
-						time.sleep(7)
+						time.sleep(1)
+						if (self.arena_tier==3 and 
+							image_manager.is_in_team_adding_tier(3)
+						):
+							self.print_log("in correct tier 3 on 2nd view")
+						else:
+							self.print_log("afraid it's not correct tier")
+							self.click_back()
+							time.sleep(7)
 			
 			#if in somewhere outside
 			#not yet implemented
