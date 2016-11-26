@@ -41,8 +41,8 @@ def mouse_click_drag(x,y, to_x, to_y, drag_time=2.5):
 		
 		windll.user32.mouse_event(
 			MOUSEEVENTF_LEFTDOWN| MOUSEEVENTF_MOVE,# | MOUSEEVENTF_ABSOLUTE,
-			int((to_x-x)/10),
-			int((to_y-y)/10),
+			int((to_x-x)/20),
+			int((to_y-y)/20),
 			0,0
 		)
 	windll.user32.SetCursorPos(to_x,to_y)

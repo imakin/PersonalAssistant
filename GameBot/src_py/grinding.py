@@ -1,5 +1,6 @@
 from makinreusable.winfunction import *
 import time
+import urllib2
 from image import *
 
 class GrindingMakin(object):
@@ -73,7 +74,7 @@ class GrindingMakin(object):
 			self.arena_continue = True
 			if (not self.arena_allstop):
 				self.arena_check_inside_fighting()
-				time.sleep(0.5)
+				#~ time.sleep(0.5)
 				
 				if image_manager.is_in_fight_room():
 					self.print_log("we're in fight room, going to arena")
@@ -141,6 +142,11 @@ class GrindingMakin(object):
 						if image_manager.is_in_rearrange_team():
 							self.print_log("we're in rearrange team")
 							break
+						if image_manager.is_in_milestone_info():
+							self.print_log("we're in milestone info")
+							break
+						keyboard_send("0")
+						self.print_log("sending 0")
 						if time.clock()-loading_time>30:
 							self.print_log("too long waiting, canceling")
 							self.click_menu_fight(1,True)
@@ -158,6 +164,7 @@ class GrindingMakin(object):
 				
 				if image_manager.is_in_more_fight_to_go():
 					self.arena_continue = False
+					#~ self.arena_capture_score()
 					self.arena_fight()
 				
 				if self.arena_continue:
@@ -166,9 +173,12 @@ class GrindingMakin(object):
 				self.arena_check_inside_fighting()
 				
 				if self.arena_continue:
-					self.arena_add_to_team()
-					self.arena_find_match()
-					self.arena_fight()
+					if not self.arena_allstop:
+						self.arena_add_to_team()
+					if not self.arena_allstop:
+						self.arena_find_match()
+					if not self.arena_allstop:
+						self.arena_fight()
 				
 			#end if (not self.arena_allstop):
 			self.arena_stack -= 1
@@ -213,10 +223,19 @@ class GrindingMakin(object):
 		keyboard_send("0")
 		
 		self.arena_rearrange_team()
+		keyboard_send("0")
+		#~ self.arena_capture_score()
 		
 		#end arena_find_match
+	
+	
+	def arena_capture_score(self):
+		self.print_log("capturing score")
+		time.sleep(1)
+		img = ImageGrab.grab((520,120,620,140))
+		self.gui.update_score(img)
 		
-		
+	
 	def arena_rearrange_team(self):
 		if not self.arena_continue:
 			return
@@ -422,8 +441,9 @@ class GrindingMakin(object):
 					):
 						self.print_log("view rewards now in fight menu arena")
 					if image_manager.get_dominant_color_grab(930,560)=="green":
+						self.print_log("view rewards now i used to click back")
 						stop = True
-						self.click_back()
+						#~ self.click_back()
 						time.sleep(1)
 					else:
 						status = "view rewards that doesn't end yet"
@@ -484,8 +504,14 @@ class GrindingMakin(object):
 					self.print_log("in correct tier 3")
 				else:
 					time.sleep(1)
-					self.click_back()
-					time.sleep(7)
+					if (self.arena_tier==3 and 
+						image_manager.is_in_team_adding_tier(3)
+					):
+						self.print_log("in correct tier 3 on 2nd view")
+					else:
+						self.print_log("afraid it's not correct tier")
+						self.click_back()
+						time.sleep(7)
 			
 			#if in somewhere outside
 			#not yet implemented
@@ -496,56 +522,72 @@ class GrindingMakin(object):
 				image_manager.is_in_bluestack_home(img) or 
 				image_manager.is_in_bluestack_login(img)
 			):
-				self.arena_allstop = 1
-				time.sleep(2)
-				mouse_click(175,613) #android home button
-				time.sleep(2)
-				mouse_click_drag(900,310,900,70, 1)#close app
-				time.sleep(2)
-				mouse_click(175,613) #android home button
-				time.sleep(2)
-				
-				#make sure scroll up most in launcher
-				repeat = 10
-				while repeat>0:
-					mouse_click_drag(500,100,500,550)
-					time.sleep(0.8)
-					repeat -= 1
-					#check if in upmost now
-					img = ImageGrab.grab() 
-					if (
-						img.getpixel((73,135))==(0xf3,0x80,0x25) and #search logo
-						img.getpixel((74,165))==(0xff,0xff,0xff) and #search logo
-						img.getpixel((914,150))==(0xff,0xff,0xff) and #plus logo
-						img.getpixel((935,147))==(0xf3,0x80,0x25) #plus logo
-					):
-						repeat = 0
-					self.print_log("waiting to be in top most")
-				
-				mouse_click(200,160)#mcoc game
-				time.sleep(10)
-				while (not image_manager.is_in_game_home()):
-					self.print_log("waiting to be in game home")
-					time.sleep(1)
-				self.click_menu_fight()
-				time.sleep(2)
-				self.start_arena()
+				self.arena_start_over()
 		
 		#end arena_fight
 	
 	
+	def arena_start_over(self):
+		"""start from exiting app and reopen it and play arena"""
+		#~ self.arena_allstop = 1
+		time.sleep(2)
+		self.print_log("closing app")
+		mouse_click(175,613) #android window button
+		time.sleep(2)
+		mouse_click_drag(900,310,900,70, 1)#close app
+		time.sleep(2)
+		self.print_log("reopening app")
+		mouse_click(121,613) #android home button
+		time.sleep(2)
+		self.arena_allstop = False
+		#make sure scroll up most in launcher
+		repeat = 10
+		while repeat>0:
+			mouse_click_drag(500,100,500,550)
+			time.sleep(1)
+			repeat -= 1
+			#check if in upmost now
+			img = ImageGrab.grab() 
+			if (
+				img.getpixel((73,135))==(0xf3,0x80,0x25) and #search logo
+				img.getpixel((74,165))==(0xff,0xff,0xff) and #search logo
+				img.getpixel((914,150))==(0xff,0xff,0xff) and #plus logo
+				img.getpixel((935,147))==(0xf3,0x80,0x25) #plus logo
+			):
+				repeat = 0
+			self.print_log("waiting to be in top most scanning for app")
+			if self.arena_allstop:
+				self.print_log("force stop from hotkey")
+				return
+		
+		mouse_click(200,160)#mcoc game
+		time.sleep(10)
+		while (not image_manager.is_in_game_home()):
+			self.print_log("waiting to be in game home")
+			time.sleep(1)
+			if self.arena_allstop:
+				self.print_log("force stop from hotkey")
+				return
+		self.click_menu_fight(True)
+		time.sleep(2)
+		self.arena_allstop = True
+		self.start_arena()
+	
+	
 	def alliance_help(self):
 		"""send help for loyalty, return False if failed to perform"""
-		img = ImageGrab.grab()
+		
 		self.print_log("helping")
 		self.click_menu()
-		
+		time.sleep(2)
+		img = ImageGrab.grab()
 		if img.getpixel((400,92))==(0x59,0,0):
 			mouse_click(375,131)#alliance button
 			time.sleep(10)#todo change to image processing
+			
 			mouse_click(490,180)#help tab
 			time.sleep(2)
-			while (image_manager.get_dominant_color(img.getpixel((750,235)))=="green"):
+			while (image_manager.get_dominant_color_grab(750,235)=="green"):
 				self.check_popup_close()
 				self.print_log("waiting to empty ally helps")
 				mouse_click(760,235)#help button
@@ -592,6 +634,25 @@ class GrindingMakin(object):
 		time.sleep(delay)
 		#end click_menu
 
+	
+	def arena_loop_breaker(self):
+		"""return true if all is well and loop should be broke"""
+		img = ImageGrab.grab()
+		if (
+			image_manager.is_in_arena_room(img) or
+			image_manager.is_in_more_fight_to_go(img) or
+			image_manager.is_in_team_adding(False,img) or
+			image_manager.is_in_fight_room(img) or
+			image_manager.is_in_fighting(img) or
+			image_manager.is_in_find_match(img) or
+			image_manager.is_in_rearrange_team(img)
+		):
+			return True
+		return False
+		#end arena_loop_breaker
+			
+	
+
 
 	def click_menu_fight(self, delay=1, until_finish=False):
 		"""
@@ -600,6 +661,10 @@ class GrindingMakin(object):
 		delay after fight button clicked not performed here
 		until_finish only return from method if game succesfully entered fight room
 		"""
+		self.check_popup_close()
+		if not image_manager.is_menu_button_available() and not image_manager.is_in_game_home():
+			self.print_log("menu button is not available but not in game home")
+			return
 		self.click_menu(delay)
 		mouse_click(270,132)#fight button
 		if until_finish:
@@ -608,7 +673,8 @@ class GrindingMakin(object):
 				self.print_log("waiting to be in fight room")
 				time.sleep(1)
 				self.check_popup_close()
-				if image_manager.is_in_arena_room():
+				self.arena_check_inside_fighting()
+				if self.arena_loop_breaker():
 					break
 				if time.clock()-start>300:
 					self.print_log("too long click menu fight waiting")
@@ -618,3 +684,26 @@ class GrindingMakin(object):
 	def click_fightroom_arena(self):
 		"""click arena button in fight room menus"""
 		mouse_click(500,446)
+
+
+	def arena_standby(self):
+		"""standby arena wait for online command"""
+		self.print_log("on your command")
+		while True:
+			self.print_log("waiting to be ordered to grind")
+			try:
+				resp = urllib2.urlopen("http://makin.pythonanywhere.com/cloud_data/aaa/read/bot_arena_startover/")
+				data = resp.read()
+				resp.close()
+				self.print_log("command is "+data)
+				if data=='True':
+					self.print_log("we're ordered to grind")
+					self.arena_start_over()
+					resp = urllib2.urlopen("http://makin.pythonanywhere.com/cloud_data/aaa/write/bot_arena_startover/False")
+					data = resp.read()
+					resp.close()
+					return
+				time.sleep(10)
+			except URLError:
+				time.sleep(10)
+		#end arena_standby
