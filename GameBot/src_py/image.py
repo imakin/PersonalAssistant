@@ -75,16 +75,17 @@ class ImageManager(object):
 		#end get_grab
 	
 	
-	def get_arena_target(self, image_grab=None):
+	def get_arena_target(self, image_grab=None, desired="any tier 3"):
 		"""
 		This is the method called to get arena tier target,
 		replace this method's image processing as needed
 		@return
 			the corresponding continue button position if found, 
 			or (-1,-1) if false
+		@param desired "any tier 3", "cornucopia"
 		"""
 		
-		desired = "any tier 3"
+		#~ desired = "any tier 3"
 		print("target is "+desired)
 		"""
 		current: orb of agamoto dr strange
@@ -324,11 +325,123 @@ class ImageManager(object):
 		#end is_in_team_adding
 	
 	
+	def is_in_team_adding_tier_2(self, image_grab=None):
+		"""
+		check if in tier 2 team adding
+		"""
+		img = self.get_grab(image_grab)
+		step = 5
+		coltol = 10
+		for y_code in range(547,548):
+			for x_code in range(94,95):
+				if (
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(0))),(49,48,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(5),y_code+cy(0))),(49,48,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(10),y_code+cy(0))),(49,48,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(15),y_code+cy(0))),(49,48,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(20),y_code+cy(0))),(49,48,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(5))),(55,52,45),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(5),y_code+cy(5))),(44,44,44),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(10),y_code+cy(5))),(44,44,44),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(15),y_code+cy(5))),(62,62,62),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(20),y_code+cy(5))),(60,60,60),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(10))),(53,49,41),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(5),y_code+cy(10))),(42,42,42),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(10),y_code+cy(10))),(42,42,42),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(15),y_code+cy(10))),(60,60,60),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(20),y_code+cy(10))),(60,60,60),coltol)
+				):
+					return True
+		return False
+		#end is_in_team_adding_tier_2
+	
+	
+	def is_in_team_adding_tier_3(self, image_grab=None):
+		"""
+		check if in tier 3 team adding
+		check for disabled find match button with 400 gold price
+		"""
+		img = self.get_grab(image_grab)
+		step = 5
+		coltol = 10
+		for y_code in range(547,555):
+			for x_code in range(100,108):
+				if (
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(0))),(46,46,46),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(5),y_code+cy(0))),(49,49,49),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(10),y_code+cy(0))),(47,47,47),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(15),y_code+cy(0))),(50,50,50),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(20),y_code+cy(0))),(49,49,49),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(25),y_code+cy(0))),(50,50,50),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(5))),(44,44,44),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(5),y_code+cy(5))),(44,44,44),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(10),y_code+cy(5))),(61,61,61),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(15),y_code+cy(5))),(44,44,44),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(20),y_code+cy(5))),(54,54,54),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(25),y_code+cy(5))),(44,44,44),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(10))),(41,41,41),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(5),y_code+cy(10))),(42,42,42),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(10),y_code+cy(10))),(50,50,50),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(15),y_code+cy(10))),(53,53,53),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(20),y_code+cy(10))),(54,54,54),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(25),y_code+cy(10))),(53,53,53),coltol)
+				):
+					return True
+		return False
+		#end is_in_team_adding_tier_3
+	
+	
+	def is_in_team_adding_tier_1(self, image_grab=None):
+		"""
+		check in tier 1 disabled or enabled button
+		"""
+		img = self.get_grab(image_grab)
+		step = 5
+		coltol = 10
+		#check for disabled find match button
+		for y_code in range(549,550):
+			for x_code in range(104,105):
+				if (
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(0))),(7,82,5),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(5),y_code+cy(0))),(7,82,5),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(10),y_code+cy(0))),(7,82,5),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(5))),(5,78,4),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(5),y_code+cy(5))),(24,92,23),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(10),y_code+cy(5))),(5,78,4),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(10))),(4,75,2),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(5),y_code+cy(10))),(23,88,21),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(10),y_code+cy(10))),(8,78,6),coltol)
+				):
+					return True
+		#check for enabled button
+		for y_code in range(551,552):
+			for x_code in range(108,109):
+				if (
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(0))),(7,81,6),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(5),y_code+cy(0))),(59,118,58),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(5))),(5,77,3),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(5),y_code+cy(5))),(35,99,33),coltol)
+				):
+					return True
+		return False
+		#end is_in_team_adding_tier_1
+	
+	
 	def is_in_team_adding_tier(self, tier, image_grab=None):
 		""" only check tier (light), if desired, check is_in_team_adding must be performed separately """
-		img = self.get_grab(image_grab)
-		if tier==3 and img.getpixel((108,559))==(0x38,0x38,0x38):
-			return True
+		#~ img = self.get_grab(image_grab)
+		#~ if tier==3 and img.getpixel((108,559))==(0x38,0x38,0x38):
+			#~ return True
+		if tier==3:
+			if self.is_in_team_adding_tier_3():
+				return True
+			elif self.is_in_team_adding_tier_1():
+				return False
+			elif self.is_in_team_adding_tier_2():
+				return False
+			else:
+				print("tier 3: as long as not tier 1 and 2 is accepted")
+				return True
 		#TODO: OTHER tier value
 		return False
 		#end is_in_team_adding_tier
@@ -362,7 +475,9 @@ class ImageManager(object):
 	
 	
 	def is_loading(self, image_grab=None):
+		"""privately used by is_stuck
 		# check is in loading, update_capture_loading must be up to date
+		"""
 		img = self.get_grab(image_grab)
 		if img.getpixel((100,100))!=self.screen_loading.getpixel((100,100)):
 			return False
@@ -418,6 +533,38 @@ class ImageManager(object):
 				
 		#end is_in_leaderboard
 	
+	
+	def is_in_loading(self, image_grab=None):
+		"""
+		doc
+		"""
+		img = self.get_grab(image_grab)
+		step = 40
+		coltol = 50
+		for y_code in range(29,39):
+			for x_code in range(714,726):
+				if (
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(0))),(18,59,84),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(40),y_code+cy(0))),(28,61,86),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(80),y_code+cy(0))),(26,57,82),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(120),y_code+cy(0))),(15,40,56),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(40))),(37,71,105),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(40),y_code+cy(40))),(38,90,121),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(80),y_code+cy(40))),(36,78,111),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(120),y_code+cy(40))),(22,56,73),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(80))),(52,77,125),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(40),y_code+cy(80))),(49,98,140),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(80),y_code+cy(80))),(31,94,134),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(120),y_code+cy(80))),(34,83,116),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(120))),(151,134,202),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(40),y_code+cy(120))),(70,103,154),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(80),y_code+cy(120))),(81,159,192),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(120),y_code+cy(120))),(51,138,169),coltol)
+				):
+					return True
+		return False
+		#end is_in_loading
+		
 	
 	def is_in_chat(self, image_grab=None):
 		"""check if in chat """
@@ -557,8 +704,10 @@ class ImageManager(object):
 		"""
 		img = self.get_grab(image_grab)
 		step = 50
-		for y_code in range(0,self.screen_height):
-			for x_code in range(0,self.screen_width):
+		#~ for y_code in range(0,self.screen_height):
+			#~ for x_code in range(0,self.screen_width):
+		for y_code in range(517,556):
+			for x_code in range(609,668):
 				if (
 					self.is_color_similar(img.getpixel((x_code+0,y_code+0)),(54,121,53)) and
 					self.is_color_similar(img.getpixel((x_code+50,y_code+0)),(53,121,51)) and
@@ -576,6 +725,31 @@ class ImageManager(object):
 		return False
 		#end is_team_adding_need_help
 
+
+	def is_team_adding_all_recharging(self, image_grab=None):
+		"""
+		return True if less than 3 champions is ready
+		"""
+		img = self.get_grab(image_grab)
+		step = 5
+		coltol = 10
+		for y_code in range(177,179):
+			for x_code in range(608,610):
+				if (
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(0))),(168,39,31),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(5),y_code+cy(0))),(225,185,183),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(10),y_code+cy(0))),(224,183,181),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(5))),(241,240,239),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(5),y_code+cy(5))),(162,37,29),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(10),y_code+cy(5))),(239,238,238),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(10))),(170,88,83),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(5),y_code+cy(10))),(154,35,26),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(10),y_code+cy(10))),(224,224,224),coltol)
+				):
+					return True
+		return False
+		#end is_team_adding_all_recharging
+	
 	
 	def is_in_milestone_info(self, image_grab=None):
 		img = self.get_grab(image_grab)

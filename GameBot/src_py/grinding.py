@@ -201,7 +201,10 @@ class GrindingMakin(object):
 			keyboard_send("Q")
 			time.sleep(3)
 			self.check_popup_close()
-		
+		if image_manager.is_team_adding_all_recharging():
+			self.print_log("less than 3 is ready, waiting")
+			self.click_back()
+			
 		#end arena_ask_for_help
 	
 	
@@ -209,9 +212,10 @@ class GrindingMakin(object):
 		"""click find match and pick easy and good score enemy"""
 		self.status ="find match"
 		time.sleep(0.5)
-		mouse_click(109,547)
+		mouse_click(109,547) #click find
 		self.arena_check_inside_fighting()
-		time.sleep(4)
+		
+		self.wait_timeout_or_check(4,image_manager.is_in_find_match)
 		
 		img = ImageGrab.grab()
 		if image_manager.pixel_search(img,543,416,575,429,(0x31,0x9d,0x32))==False:
@@ -286,6 +290,7 @@ class GrindingMakin(object):
 			giveup -= 1
 			if giveup<1:
 				should_check_again = False
+		keyboard_send("0")#done
 		#end arena_rearrange_team
 			
 	
@@ -532,7 +537,8 @@ class GrindingMakin(object):
 				image_manager.is_in_bluestack_login(img)
 			):
 				self.arena_start_over()
-		
+		self.print_log("done fighting, recalibrate window pos")
+		self.calibrate_position()
 		#end arena_fight
 	
 	
@@ -663,12 +669,12 @@ class GrindingMakin(object):
 	
 
 
-	def click_menu_fight(self, delay=1, until_finish=False):
+	def click_menu_fight(self, delay=1, until_in_fight_room=False):
 		"""
 		perform clicking the menu button then fight button to go to fight room
 		delay is the wait between clicks
 		delay after fight button clicked not performed here
-		until_finish only return from method if game succesfully entered fight room
+		until_in_fight_room only return from method if game succesfully entered fight room
 		"""
 		self.check_popup_close()
 		if not image_manager.is_menu_button_available() and not image_manager.is_in_game_home():
@@ -676,7 +682,7 @@ class GrindingMakin(object):
 			return
 		self.click_menu(delay)
 		mouse_click(270,132)#fight button
-		if until_finish:
+		if until_in_fight_room:
 			start = time.clock()
 			while not image_manager.is_in_fight_room():
 				self.print_log("waiting to be in fight room")
@@ -716,3 +722,133 @@ class GrindingMakin(object):
 			except URLError:
 				time.sleep(10)
 		#end arena_standby
+	
+	def arena_act_loop(self):
+		while True:
+			self.arena_act()
+	
+	def arena_act(self):
+		
+		self.check_popup_close()
+		self.arena_check_inside_fighting()
+		
+		img = ImageGrab.grab()
+		
+		if image_manager.is_in_arena_room(img):#arena (versus) room
+			self.print_log("act: arena room")
+			self.arena_click_target()
+		
+		elif image_manager.is_in_fight_room(img):
+			self.print_log("act: fight room")
+			self.arena_click_versus()
+		
+		elif image_manager.is_in_team_adding(img):
+			self.print_log("act: team adding")
+			if image_manager.is_in_team_adding(True)=="dark":
+				mouse_click(145,210)
+				time.sleep(1)
+			play = True
+			is_tier_3 = image_manager.is_in_team_adding_tier(3)
+			if self.arena_tier==3 and is_tier_3:
+				self.print_log("in correct team adding tier 3")
+				
+			elif self.arena_tier==3 and not is_tier_3:
+				self.print_log("afraid not in correct tier")
+				self.click_back()
+				play = False
+				
+			else:
+				self.print_log("arena tier is %d"%(self.arena_tier))
+			
+			if play:
+				self.arena_ask_for_help()
+				self.arena_add_to_team()
+				self.arena_find_match()
+				self.arena_fight()
+		
+		elif image_manager.is_in_find_match(img):
+			self.print_log("act: find match")
+			keyboard_send("0")
+		
+		elif image_manager.is_in_rearrange_team(img):
+			self.print_log("act: rearrange team")
+			self.arena_rearrange_team()
+			keyboard_send("0")
+		
+		elif image_manager.is_in_loading(img):
+			self.print_log("act: loading")
+			time.sleep(0.5)
+		
+		elif image_manager.is_in_more_fight_to_go(img):
+			self.print_log("act: more fight to go")
+			self.arena_fight()
+		
+		elif image_manager.is_in_fighting(img):
+			self.print_log("act: fighting")
+			self.arena_fight()
+		
+		elif image_manager.is_in_game_home(img):
+			self.print_log("in game home")
+			self.click_menu_fight(1,True)
+			
+
+	def arena_click_target(self):
+		"""get arena tier target and goto its team adding"""
+		time.sleep(0.5)
+		selected = image_manager.get_arena_target(None, "cornucopia")
+		left = 2
+		giveup = 30
+		while selected==(-1,-1):
+			if left>0:
+				mouse_click_drag(130,255,700,255)#drag left most
+				left -= 1
+			else:
+				mouse_click_drag(700,255,130,255)#drag right most
+			time.sleep(0.5)
+			selected = image_manager.get_arena_target()
+			self.check_popup_close()
+			self.print_log("searching target")
+			giveup -= 1
+			if giveup<1:
+				self.click_back()
+				self.print_log("failed searching target")
+				return
+		self.print_log("done searching target")
+		mouse_click(selected[0], selected[1])
+		time.sleep(2)
+		#end arena_click_target
+
+
+	def arena_click_versus(self):
+		"""click versus(arena) in fight room"""
+		self.print_log("we're in fight room, going to arena")
+		mouse_click_drag(130,255,700,255)#drag left most
+		time.sleep(1)
+		mouse_click_drag(130,255,700,255)
+		time.sleep(0.5)
+		mouse_click(500,446)
+		
+		wait = time.clock()
+		while not image_manager.is_in_arena_room():
+			self.arena_check_inside_fighting()
+			self.print_log("waiting to be in arena room")
+			time.sleep(0.5)
+			self.check_popup_close()
+			if time.clock()-wait>300:
+				break
+		#end arena_click_versus
+
+
+	def wait_timeout_or_check(self, timeout, check_method):
+		"""
+		perform wait until check_method execution returns true or timeout is 0
+		checking performed every approx. 1 second passed
+		@param timeout in second
+		@param check_method the method checking pointer
+		"""
+		while True:
+			time.sleep(1)
+			if timeout<=0 or check_method():
+				break
+			timeout = timeout-1
+		#end wait_timeout_or_check

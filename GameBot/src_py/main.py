@@ -67,11 +67,11 @@ class MainGUI(QtGui.QMainWindow):
 		self.bt_start_arena.setText("start arena")
 		self.igr_main.addWidget(self.bt_start_arena, 24,0,1,1,QtCore.Qt.AlignTop)
 		
-		# self.bt_arena_fight
-		self.bt_arena_fight = MakinButton(self.fr_main)
-		self.bt_arena_fight.setObjectName("bt_arena_fight")
-		self.bt_arena_fight.setText("arena fight")
-		self.igr_main.addWidget(self.bt_arena_fight, 25,0,1,1,QtCore.Qt.AlignTop)
+		# self.bt_arena_start_no_thread
+		self.bt_arena_start_no_thread = MakinButton(self.fr_main)
+		self.bt_arena_start_no_thread.setObjectName("bt_arena_start_no_thread")
+		self.bt_arena_start_no_thread.setText("arena start no thread")
+		self.igr_main.addWidget(self.bt_arena_start_no_thread, 25,0,1,1,QtCore.Qt.AlignTop)
 		
 		# self.bt_arena_start_over
 		self.bt_arena_start_over = MakinButton(self.fr_main)
@@ -141,6 +141,9 @@ class MainGUI(QtGui.QMainWindow):
 	def signal_arena_fight(self):
 		thread.start_new_thread(self.grinding.arena_fight, ())
 	
+	def signal_arena_start_no_thread(self):
+		self.grinding.start_arena()
+	
 	def signal_arena_start_over(self):
 		thread.start_new_thread(self.grinding.arena_start_over, ())
 	
@@ -151,7 +154,7 @@ class MainGUI(QtGui.QMainWindow):
 	def build_signal(self):
 		self.bt_calibrateposition.clicked.connect(self.signal_calibrate_position)
 		self.bt_start_arena.clicked.connect(self.signal_start_arena)
-		self.bt_arena_fight.clicked.connect(self.signal_arena_fight)
+		self.bt_arena_start_no_thread.clicked.connect(self.signal_arena_fight)
 		self.bt_arena_start_over.clicked.connect(self.signal_arena_start_over)
 		self.bt_arena_standby.clicked.connect(self.signal_arena_standby)
 		#~ self.bt_update_score.clicked.connect(self.update_score)
