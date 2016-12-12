@@ -6,11 +6,11 @@ import ImageGrab
 import time
 
 class ImageManager(object):
+	screen_size = (970,632)
 	def __init__(self):
 		#default image
 		self.screen_save = ImageGrab.grab()
 		self.screen_loading = self.screen_save
-		self.screen_size = (970,632)
 		self.screen_width = self.screen_size[0]
 		self.screen_height = self.screen_size[1]
 		pass
@@ -161,6 +161,8 @@ class ImageManager(object):
 					):
 						return x_code+cx(730),y_code+cy(300)
 			return -1,-1
+		elif desired=="t4basic":
+			return self.get_arena_t4b_button()
 		#end get_arena_target
 
 	
@@ -181,7 +183,8 @@ class ImageManager(object):
 		"""
 		img = self.get_grab(image_grab)
 		step = 5
-		coltol = 10
+		coltol = 20
+		#814,179
 		for y_code in range(167,200):
 			for x_code in range(812,850):
 				if (
@@ -222,14 +225,14 @@ class ImageManager(object):
 		"""
 		img = self.get_grab(image_grab)
 		
-		if (img.getpixel((235,338))==(0x2b,0x2c,0x30) and
-			img.getpixel((235,416))==(0x2b,0x2c,0x30) and
+		if (img.getpixel((235,345))==(0x2b,0x2c,0x30) and
+			img.getpixel((235,420))==(0x2b,0x2c,0x30) and
 			img.getpixel((235,500))==(0x2b,0x2c,0x30) and
-			img.getpixel((720,338))==(0x2b,0x2c,0x30) and
-			img.getpixel((720,416))==(0x2b,0x2c,0x30) and
+			img.getpixel((720,345))==(0x2b,0x2c,0x30) and
+			img.getpixel((720,420))==(0x2b,0x2c,0x30) and
 			img.getpixel((720,500))==(0x2b,0x2c,0x30) and
-			img.getpixel((490,338))!=(0x2b,0x2c,0x30) and
-			img.getpixel((490,416))!=(0x2b,0x2c,0x30) and
+			img.getpixel((490,345))!=(0x2b,0x2c,0x30) and
+			img.getpixel((490,420))!=(0x2b,0x2c,0x30) and
 			img.getpixel((490,500))!=(0x2b,0x2c,0x30)
 		):
 			return True
@@ -249,7 +252,28 @@ class ImageManager(object):
 				return True
 		return False
 		#end is_in_more_fight_to_go
-		
+	
+	
+	def is_continue_button_available(self, image_grab=None):
+		"""
+		check if any continue button 
+		(after fight, etc )
+		"""
+		# captured from 842,549 to 930,564
+		img = self.get_grab(image_grab)
+		step = 30
+		coltol = 10
+		for y_code in range(548,550):
+			for x_code in range(841,843):
+				if (
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(0))),(22,98,21),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(30),y_code+cy(0))),(22,98,21),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(60),y_code+cy(0))),(22,98,21),coltol)
+				):
+					return True
+		return False
+		#end is_continue_button_available
+	
 		
 	def is_energy_full(self, image_grab=None):
 		"""
@@ -305,6 +329,28 @@ class ImageManager(object):
 		return False
 		#end is_in_fighting
 	
+	def is_in_fighting_done(self, image_grab=None):
+		"""
+		check just done fighting, reading reward text in the reward box
+		"""
+		# captured from 437,225 to 541,238
+		img = self.get_grab(image_grab)
+		step = 15
+		coltol = 10
+		for y_code in range(224,226):
+			for x_code in range(436,438):
+				if (
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(0))),(43,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(15),y_code+cy(0))),(43,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(30),y_code+cy(0))),(50,51,55),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(45),y_code+cy(0))),(49,50,54),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(60),y_code+cy(0))),(43,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(75),y_code+cy(0))),(43,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(90),y_code+cy(0))),(43,44,48),coltol)
+				):
+					return True
+		return False
+		#end is_in_fighting_done
 	
 	def is_in_team_adding(self, check_lightdark=False, image_grab=None):
 		""" check whether in team adding or not (True or False
@@ -455,7 +501,8 @@ class ImageManager(object):
 		return True if stuck, False if not
 		"""
 		img = self.get_grab(image_grab)
-		if (self.is_loading(img)):
+		if (self.is_in_loading(img)):
+			print("stuck check: in loading")
 			return False
 		
 		if img.getpixel((100,100))!=self.screen_save.getpixel((100,100)):
@@ -479,20 +526,59 @@ class ImageManager(object):
 		# check is in loading, update_capture_loading must be up to date
 		"""
 		img = self.get_grab(image_grab)
-		if img.getpixel((100,100))!=self.screen_loading.getpixel((100,100)):
-			return False
-		if img.getpixel((400,100))!=self.screen_loading.getpixel((400,100)):
-			return False
-		if img.getpixel((700,100))!=self.screen_loading.getpixel((700,100)):
-			return False
-		if img.getpixel((100,500))!=self.screen_loading.getpixel((100,500)):
-			return False
-		if img.getpixel((498,298))!=self.screen_loading.getpixel((498,298)):
-			return False
-		if img.getpixel((700,500))!=self.screen_loading.getpixel((700,500)):
-			return False
-		return True
+		return self.is_in_loading(img)
+		#~ if img.getpixel((100,100))!=self.screen_loading.getpixel((100,100)):
+			#~ return False
+		#~ if img.getpixel((400,100))!=self.screen_loading.getpixel((400,100)):
+			#~ return False
+		#~ if img.getpixel((700,100))!=self.screen_loading.getpixel((700,100)):
+			#~ return False
+		#~ if img.getpixel((100,500))!=self.screen_loading.getpixel((100,500)):
+			#~ return False
+		#~ if img.getpixel((498,298))!=self.screen_loading.getpixel((498,298)):
+			#~ return False
+		#~ if img.getpixel((700,500))!=self.screen_loading.getpixel((700,500)):
+			#~ return False
+		#~ return True
 		#end is_loading
+	
+	
+	def is_login_other_device(self, image_grab=None):
+		"""
+		popup if login other device
+		"""
+		# captured from 430,292 to 545,302
+		img = self.get_grab(image_grab)
+		step = 5
+		coltol = 10
+		for y_code in range(291,293):
+			for x_code in range(429,431):
+				if (
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(0))),(44,45,49),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(5),y_code+cy(0))),(109,110,112),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(10),y_code+cy(0))),(76,77,80),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(55),y_code+cy(0))),(98,98,101),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(60),y_code+cy(0))),(53,54,58),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(65),y_code+cy(0))),(43,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(70),y_code+cy(0))),(116,117,120),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(75),y_code+cy(0))),(43,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(85),y_code+cy(0))),(96,96,99),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(35),y_code+cy(5))),(116,117,119),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(40),y_code+cy(5))),(45,46,50),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(45),y_code+cy(5))),(141,142,144),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(50),y_code+cy(5))),(70,71,74),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(55),y_code+cy(5))),(119,120,123),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(70),y_code+cy(5))),(43,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(75),y_code+cy(5))),(68,69,73),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(80),y_code+cy(5))),(70,71,74),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(85),y_code+cy(5))),(63,64,68),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(90),y_code+cy(5))),(110,111,113),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(100),y_code+cy(5))),(43,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(105),y_code+cy(5))),(71,72,76),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(110),y_code+cy(5))),(70,71,74),coltol)
+				):
+					return True
+		return False
 	
 	
 	def is_in_popup(self, image_grab=None):
@@ -536,30 +622,31 @@ class ImageManager(object):
 	
 	def is_in_loading(self, image_grab=None):
 		"""
-		doc
+		howard duck event loading
 		"""
+		# captured from 882,44 to 949,114
 		img = self.get_grab(image_grab)
-		step = 40
-		coltol = 50
-		for y_code in range(29,39):
-			for x_code in range(714,726):
+		step = 18
+		coltol = 10
+		for y_code in range(43,45):
+			for x_code in range(881,883):
 				if (
-					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(0))),(18,59,84),coltol) and
-					self.is_color_similar(img.getpixel((x_code+cx(40),y_code+cy(0))),(28,61,86),coltol) and
-					self.is_color_similar(img.getpixel((x_code+cx(80),y_code+cy(0))),(26,57,82),coltol) and
-					self.is_color_similar(img.getpixel((x_code+cx(120),y_code+cy(0))),(15,40,56),coltol) and
-					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(40))),(37,71,105),coltol) and
-					self.is_color_similar(img.getpixel((x_code+cx(40),y_code+cy(40))),(38,90,121),coltol) and
-					self.is_color_similar(img.getpixel((x_code+cx(80),y_code+cy(40))),(36,78,111),coltol) and
-					self.is_color_similar(img.getpixel((x_code+cx(120),y_code+cy(40))),(22,56,73),coltol) and
-					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(80))),(52,77,125),coltol) and
-					self.is_color_similar(img.getpixel((x_code+cx(40),y_code+cy(80))),(49,98,140),coltol) and
-					self.is_color_similar(img.getpixel((x_code+cx(80),y_code+cy(80))),(31,94,134),coltol) and
-					self.is_color_similar(img.getpixel((x_code+cx(120),y_code+cy(80))),(34,83,116),coltol) and
-					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(120))),(151,134,202),coltol) and
-					self.is_color_similar(img.getpixel((x_code+cx(40),y_code+cy(120))),(70,103,154),coltol) and
-					self.is_color_similar(img.getpixel((x_code+cx(80),y_code+cy(120))),(81,159,192),coltol) and
-					self.is_color_similar(img.getpixel((x_code+cx(120),y_code+cy(120))),(51,138,169),coltol)
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(0))),(28,36,20),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(18),y_code+cy(0))),(88,97,106),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(36),y_code+cy(0))),(20,27,28),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(54),y_code+cy(0))),(82,91,99),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(18))),(22,29,35),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(18),y_code+cy(18))),(52,62,70),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(36),y_code+cy(18))),(19,25,27),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(54),y_code+cy(18))),(58,67,75),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(36))),(76,29,29),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(18),y_code+cy(36))),(49,57,66),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(36),y_code+cy(36))),(39,58,67),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(54),y_code+cy(36))),(60,68,73),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(54))),(43,19,19),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(18),y_code+cy(54))),(42,51,51),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(36),y_code+cy(54))),(44,44,52),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(54),y_code+cy(54))),(28,30,36),coltol)
 				):
 					return True
 		return False
@@ -653,26 +740,32 @@ class ImageManager(object):
 	def get_arena_t4b_button(self, image_grab=None):
 		"""
 		check if in current view (arena room) there is arena t4b 
-		return the place where the text "catalyst clash - basic"
+		return the place where the continue button is "catalyst clash - basic"
 		"""
-		
 		img = self.get_grab(image_grab)
 		step = 10
-		coltol = 50
-		for y_code in range(226,264):
+		coltol = 30
+		for y_code in range(292,294):
 			for x_code in range(0,self.screen_width):
 				if (
-					self.is_color_similar(img.getpixel((x_code+0,y_code+0)),(42,43,47),coltol) and
-					self.is_color_similar(img.getpixel((x_code+10,y_code+0)),(43,44,49),coltol) and
-					self.is_color_similar(img.getpixel((x_code+20,y_code+0)),(40,39,45),coltol) and
-					self.is_color_similar(img.getpixel((x_code+0,y_code+10)),(29,30,35),coltol) and
-					self.is_color_similar(img.getpixel((x_code+10,y_code+10)),(252,252,252),coltol) and
-					self.is_color_similar(img.getpixel((x_code+20,y_code+10)),(32,33,38),coltol) and
-					self.is_color_similar(img.getpixel((x_code+0,y_code+20)),(39,39,49),coltol) and
-					self.is_color_similar(img.getpixel((x_code+10,y_code+20)),(216,216,218),coltol) and
-					self.is_color_similar(img.getpixel((x_code+20,y_code+20)),(244,244,244),coltol)
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(0))),(57,61,72),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(10),y_code+cy(0))),(122,125,143),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(20),y_code+cy(0))),(75,78,94),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(30),y_code+cy(0))),(59,62,75),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(10))),(152,155,172),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(10),y_code+cy(10))),(214,214,220),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(20),y_code+cy(10))),(169,171,188),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(30),y_code+cy(10))),(68,72,84),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(20))),(137,140,159),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(10),y_code+cy(20))),(181,181,192),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(20),y_code+cy(20))),(163,165,182),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(30),y_code+cy(20))),(73,77,89),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(30))),(68,72,84),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(10),y_code+cy(30))),(82,85,99),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(20),y_code+cy(30))),(135,138,156),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(30),y_code+cy(30))),(175,177,190),coltol)
 				):
-					return x_code,y_code
+					return x_code,y_code+230
 		return -1,-1
 		#end is_t4b_available
 		
@@ -719,8 +812,8 @@ class ImageManager(object):
 	
 	def is_team_adding_need_help(self, image_grab=None):
 		"""check if in team adding we have champion to be asked for help"""
-		img = self.get_grab(image_grab)
-		if self.get_dominant_color(img.getpixel((260,175)))=="green":
+		img = self.get_grab(image_grab)#260,175, now as of howard, 278,175
+		if self.get_dominant_color(img.getpixel((278,175)))=="green":
 			return True
 		return False
 		#end is_team_adding_need_help
@@ -760,6 +853,292 @@ class ImageManager(object):
 		#is_in_milestone_info
 
 
+	def is_in_quest(self, image_grab=None):
+		"""
+		check for the end quest button
+		"""
+		img = self.get_grab(image_grab)
+		step = 10
+		coltol = 10
+		for y_code in range(cy(472),cy(475)):
+			for x_code in range(cx(897),cx(1000)):
+				if (
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(0))),(51,51,56),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(10),y_code+cy(0))),(50,50,55),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(20),y_code+cy(0))),(50,50,55),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(30),y_code+cy(0))),(50,50,55),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(40),y_code+cy(0))),(50,50,55),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(10))),(50,50,55),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(10),y_code+cy(10))),(49,49,54),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(20),y_code+cy(10))),(49,49,54),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(30),y_code+cy(10))),(187,187,189),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(40),y_code+cy(10))),(50,50,55),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(20))),(50,50,55),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(10),y_code+cy(20))),(49,49,54),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(20),y_code+cy(20))),(122,122,125),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(30),y_code+cy(20))),(187,187,189),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(40),y_code+cy(20))),(50,50,55),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(30))),(50,50,55),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(10),y_code+cy(30))),(49,49,54),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(20),y_code+cy(30))),(124,124,127),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(30),y_code+cy(30))),(170,170,172),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(40),y_code+cy(30))),(50,50,55),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(40))),(51,51,56),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(10),y_code+cy(40))),(50,50,55),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(20),y_code+cy(40))),(50,50,55),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(30),y_code+cy(40))),(50,50,55),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(40),y_code+cy(40))),(50,50,55),coltol)
+				):
+					return True
+		return False
+	#end is_in_quest
+
+
+	
+	def is_in_quest_out_of_energy(self, image_grab=None):
+		"""
+		Check the out of energy text
+		"""
+		# captured from 395,133 to 583,147
+		img = self.get_grab(image_grab)
+		step = 15
+		coltol = 10
+		for y_code in range(132,134):
+			for x_code in range(394,396):
+				if (
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(0))),(43,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(15),y_code+cy(0))),(46,47,51),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(30),y_code+cy(0))),(83,84,87),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(45),y_code+cy(0))),(133,133,136),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(60),y_code+cy(0))),(90,91,94),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(75),y_code+cy(0))),(43,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(90),y_code+cy(0))),(43,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(105),y_code+cy(0))),(137,137,140),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(120),y_code+cy(0))),(43,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(135),y_code+cy(0))),(137,137,140),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(150),y_code+cy(0))),(136,136,139),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(165),y_code+cy(0))),(136,136,139),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(180),y_code+cy(0))),(43,44,48),coltol)
+				):
+					return True
+		return False
+	
+	
+
+	def is_in_quest_portal_select(self, image_grab=None):
+		"""
+		check view button if in portal select
+		"""
+		# captured from 443,439 to 535,468
+		img = self.get_grab(image_grab)
+		step = 20
+		coltol = 30
+		for y_code in range(cy(434),cy(444)):
+			for x_code in range(cx(438),cx(448)):
+				if (
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(0))),(25,110,0),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(20),y_code+cy(0))),(45,128,0),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(40),y_code+cy(0))),(60,140,0),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(60),y_code+cy(0))),(54,136,0),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(80),y_code+cy(0))),(35,119,0),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(20))),(39,123,0),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(20),y_code+cy(20))),(81,157,0),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(40),y_code+cy(20))),(152,209,40),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(60),y_code+cy(20))),(206,230,170),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(80),y_code+cy(20))),(58,139,0),coltol)
+				):
+					return True
+		return False
+		#end is_in_quest_portal_select
+
+	def is_in_quest_complete(self, image_grab=None):
+		"""
+		quest complete popup dialog, check for "!" im the "complete!" text shown
+		"""
+		# captured from 615,95 to 618,117
+		img = self.get_grab(image_grab)
+		step = 2
+		coltol = 10
+		for y_code in range(94,97):
+			for x_code in range(614,618):
+				if (
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(0))),(219,242,219),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(2),y_code+cy(0))),(219,242,219),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(2))),(209,237,209),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(2),y_code+cy(2))),(209,237,209),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(4))),(199,232,198),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(2),y_code+cy(4))),(199,232,198),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(6))),(190,228,188),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(2),y_code+cy(6))),(190,228,188),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(8))),(180,224,177),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(2),y_code+cy(8))),(180,224,177),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(10))),(170,219,167),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(2),y_code+cy(10))),(170,219,167),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(12))),(160,214,157),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(2),y_code+cy(12))),(160,214,157),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(14))),(150,210,146),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(2),y_code+cy(14))),(150,210,146),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(16))),(141,205,136),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(2),y_code+cy(16))),(141,205,136),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(18))),(131,201,126),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(2),y_code+cy(18))),(131,201,126),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(20))),(121,197,116),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(2),y_code+cy(20))),(121,197,116),coltol)
+				):
+					return True
+		return False
+		#end is_in_quest_complete
+		
+		
+	def is_in_quest_complete_button_next(self, image_grab=None):
+		"""
+		check if mid button is next quest
+		"""
+		# captured from 453,467 to 540,478
+		img = self.get_grab(image_grab)
+		step = 10
+		coltol = 10
+		for y_code in range(462,472):
+			for x_code in range(448,458):
+				if (
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(0))),(13,91,12),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(10),y_code+cy(0))),(13,91,12),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(20),y_code+cy(0))),(13,91,12),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(30),y_code+cy(0))),(13,91,12),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(40),y_code+cy(0))),(13,91,12),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(50),y_code+cy(0))),(13,91,12),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(60),y_code+cy(0))),(13,91,12),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(70),y_code+cy(0))),(13,91,12),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(80),y_code+cy(0))),(13,91,12),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(10))),(5,78,4),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(10),y_code+cy(10))),(5,78,4),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(20),y_code+cy(10))),(152,182,152),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(30),y_code+cy(10))),(248,250,248),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(40),y_code+cy(10))),(5,78,4),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(50),y_code+cy(10))),(171,196,171),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(60),y_code+cy(10))),(142,175,141),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(70),y_code+cy(10))),(189,208,189),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(80),y_code+cy(10))),(5,78,4),coltol)
+				):
+					return True
+		return False
+		#end is_in_quest_complete_button_next
+	
+	
+	def get_quest_request_help_button(self, image_grab=None):
+		"""
+		check if energy is empty and if request button is available
+		"""
+		# captured from 216,463 to 333,475
+		img = self.get_grab(image_grab)
+		step = 10
+		coltol = 10
+		for y_code in range(460,466):
+			for x_code in range(216,490):
+				if (
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(0))),(28,29,29),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(10),y_code+cy(0))),(29,30,29),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(20),y_code+cy(0))),(30,31,28),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(30),y_code+cy(0))),(32,32,28),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(40),y_code+cy(0))),(33,33,28),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(50),y_code+cy(0))),(34,34,28),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(60),y_code+cy(0))),(35,34,28),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(70),y_code+cy(0))),(34,33,28),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(80),y_code+cy(0))),(32,32,28),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(90),y_code+cy(0))),(31,31,28),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(100),y_code+cy(0))),(29,30,29),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(110),y_code+cy(0))),(28,29,29),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(10))),(45,85,114),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(10),y_code+cy(10))),(39,66,85),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(20),y_code+cy(10))),(47,92,125),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(30),y_code+cy(10))),(39,66,86),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(40),y_code+cy(10))),(61,134,186),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(50),y_code+cy(10))),(42,74,97),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(60),y_code+cy(10))),(58,126,175),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(70),y_code+cy(10))),(41,72,95),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(80),y_code+cy(10))),(40,70,92),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(90),y_code+cy(10))),(60,133,185),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(100),y_code+cy(10))),(44,80,107),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(110),y_code+cy(10))),(57,123,171),coltol)
+				):
+					return x_code-cx(60),y_code-cy(36)
+		return -1,-1
+		#end quest_get_request_button
+
+	
+	def is_in_chat_search(self, image_grab=None):
+		"""
+		chat search player by name
+		"""
+		# captured from 545,46 to 639,65
+		img = self.get_grab(image_grab)
+		step = 10
+		coltol = 10
+		for y_code in range(45,47):
+			for x_code in range(544,546):
+				if (
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(0))),(41,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(10),y_code+cy(0))),(41,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(20),y_code+cy(0))),(41,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(30),y_code+cy(0))),(41,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(40),y_code+cy(0))),(41,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(50),y_code+cy(0))),(41,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(60),y_code+cy(0))),(41,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(70),y_code+cy(0))),(41,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(80),y_code+cy(0))),(41,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(90),y_code+cy(0))),(41,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(10))),(41,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(10),y_code+cy(10))),(113,115,118),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(20),y_code+cy(10))),(249,249,249),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(30),y_code+cy(10))),(133,135,137),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(40),y_code+cy(10))),(95,96,100),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(50),y_code+cy(10))),(98,101,104),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(60),y_code+cy(10))),(219,220,220),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(70),y_code+cy(10))),(41,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(80),y_code+cy(10))),(100,102,105),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(90),y_code+cy(10))),(255,255,255),coltol)
+				):
+					return True
+		return False
+		#end is_in_chat_search
+		
+	def is_in_duel_continue(self, image_grab=None):
+		"""
+		check in dialog for continue to duel showing top hero of target
+		"""
+		# captured from 456,147 to 521,168
+		img = self.get_grab(image_grab)
+		step = 10
+		coltol = 10
+		for y_code in range(146,148):
+			for x_code in range(455,457):
+				if (
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(0))),(43,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(10),y_code+cy(0))),(43,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(20),y_code+cy(0))),(43,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(30),y_code+cy(0))),(43,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(40),y_code+cy(0))),(43,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(50),y_code+cy(0))),(43,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(60),y_code+cy(0))),(43,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(10))),(43,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(10),y_code+cy(10))),(43,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(20),y_code+cy(10))),(117,118,120),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(30),y_code+cy(10))),(47,48,52),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(40),y_code+cy(10))),(234,234,234),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(50),y_code+cy(10))),(63,64,67),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(60),y_code+cy(10))),(43,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(20))),(43,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(10),y_code+cy(20))),(149,149,151),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(20),y_code+cy(20))),(43,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(30),y_code+cy(20))),(170,171,173),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(40),y_code+cy(20))),(77,78,81),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(50),y_code+cy(20))),(106,107,109),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(60),y_code+cy(20))),(149,149,151),coltol)
+				):
+					return True
+		return False
+		#end is_in_duel_continue
+		
 	def update_capture(self):
 		"""capture current image"""
 		self.screen_save = ImageGrab.grab()

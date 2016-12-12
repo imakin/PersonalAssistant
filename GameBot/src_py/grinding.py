@@ -215,7 +215,9 @@ class GrindingMakin(object):
 		mouse_click(109,547) #click find
 		self.arena_check_inside_fighting()
 		
-		self.wait_timeout_or_check(4,image_manager.is_in_find_match)
+		if (self.wait_timeout_or_check(4,image_manager.is_in_find_match)):
+			pass
+			#~ self.arena_continue = True
 		
 		img = ImageGrab.grab()
 		if image_manager.pixel_search(img,543,416,575,429,(0x31,0x9d,0x32))==False:
@@ -250,10 +252,17 @@ class GrindingMakin(object):
 		
 	
 	def arena_rearrange_team(self):
-		if not self.arena_continue:
-			return
-			
 		self.print_log("rearrange")
+		
+		if not self.arena_continue:
+			self.print_log("arena_continue is False")
+			return
+		if not image_manager.is_in_rearrange_team():
+			self.print_log("not in rearrange team, wait")
+			time.sleep(3)
+			if not image_manager.is_in_rearrange_team():
+				self.print_log("recheck not in rearrange team")
+				return
 		
 		#give time for manual rearrange
 		wait = 10
@@ -338,6 +347,9 @@ class GrindingMakin(object):
 	
 	def arena_fight(self):
 		"""control fighting in arena"""
+		self.arena_fight_state_mode()
+		return
+		
 		self.status = "fighting in arena"
 		sequence = 0
 		self.arena_allstop = False
@@ -542,6 +554,58 @@ class GrindingMakin(object):
 		#end arena_fight
 	
 	
+	
+	def arena_fight_state_mode(self):
+		self.print_log("start fighting")
+		self.status = "fighting in arena"
+		self.fighting_sp_mode = 2
+		sequence = 0
+		while True:
+			keyboard_send("0")
+			
+			if sequence%4==0:
+				keyboard_send("K")
+			if sequence>10:
+				keyboard_send("F")
+				if sequence>15:
+					keyboard_send("D")
+					sequence = 0
+			sequence += 1
+			
+			img = ImageGrab.grab()
+			specialbt = img.getpixel((cx(133),cy(507)))
+			if self.fighting_sp_mode==1:
+				#~ if image_manager.get_dominant_color(specialbt)=="green":
+				keyboard_send(KEYCODE_SPACE)
+			elif self.fighting_sp_mode==2:
+				if image_manager.get_dominant_color(specialbt)=="red":
+					if (specialbt[1]-specialbt[2])>(specialbt[0]-specialbt[1]) or (specialbt[0]-specialbt[1])>(specialbt[1]-specialbt[2]):
+						keyboard_send(KEYCODE_SPACE)
+			elif self.fighting_sp_mode==3:
+				if image_manager.get_dominant_color(specialbt)=="red" and (specialbt[0]-specialbt[1])>(specialbt[1]-specialbt[2]):
+					keyboard_send(KEYCODE_SPACE)
+			
+			#~ if not image_manager.is_in_fighting(img):
+			if sequence%5==0:
+				if not image_manager.is_in_fighting(img):
+					print("break in fight room")
+					break
+			#~ if image_manager.is_in_team_adding(img):
+				#~ print("break in team adding")
+				#~ break
+			#~ elif image_manager.is_in_chat(img):
+				#~ print(" break chat")
+				#~ break
+			#~ if not image_manager.is_in_fighting(img):
+				#~ if not image_manager.is_in_
+		for x in range(0,10):
+			keyboard_send("J")
+			time.sleep(0.2)
+		self.print_log("done fighting")
+		
+	
+	
+	
 	def arena_start_over(self):
 		"""start from exiting app and reopen it and play arena"""
 		#~ self.arena_allstop = 1
@@ -577,16 +641,19 @@ class GrindingMakin(object):
 		
 		mouse_click(200,160)#mcoc game
 		time.sleep(10)
-		while (not image_manager.is_in_game_home()):
-			self.print_log("waiting to be in game home")
-			time.sleep(1)
-			if self.arena_allstop:
-				self.print_log("force stop from hotkey")
-				return
-		self.click_menu_fight(True)
-		time.sleep(2)
-		self.arena_allstop = True
-		self.start_arena()
+		self.arena_act_loop()
+		
+		#~ while (not image_manager.is_in_game_home()):
+			#~ self.print_log("waiting to be in game home")
+			#~ time.sleep(1)
+			#~ if self.arena_allstop:
+				#~ self.print_log("force stop from hotkey")
+				#~ return
+		#~ self.click_menu_fight(True)
+		#~ time.sleep(2)
+		#~ self.arena_allstop = True
+		#~ self.start_arena()
+		#end arena_start_over
 	
 	
 	def alliance_help(self):
@@ -616,10 +683,11 @@ class GrindingMakin(object):
 		#end alliance_help
 	
 	
-	def check_popup_close(self):
+	def check_popup_close(self, image_grab=None):
 		"""check if in popup, close it if true
 		return True if there is popup"""
-		c = image_manager.is_in_popup()
+		img = image_manager.get_grab(image_grab)
+		c = image_manager.is_in_popup(img)
 		if c!=(-1,-1):
 			self.print_log("there is popup")
 			mouse_click(c[0],c[1])
@@ -691,8 +759,9 @@ class GrindingMakin(object):
 				self.arena_check_inside_fighting()
 				if self.arena_loop_breaker():
 					break
-				if time.clock()-start>300:
+				if time.clock()-start>10:
 					self.print_log("too long click menu fight waiting")
+					return
 					#todo self.startover
 		#end click_menu_fight
 	
@@ -713,10 +782,10 @@ class GrindingMakin(object):
 				self.print_log("command is "+data)
 				if data=='True':
 					self.print_log("we're ordered to grind")
-					self.arena_start_over()
 					resp = urllib2.urlopen("http://makin.pythonanywhere.com/cloud_data/aaa/write/bot_arena_startover/False")
 					data = resp.read()
 					resp.close()
+					self.arena_start_over()
 					return
 				time.sleep(10)
 			except URLError:
@@ -727,7 +796,7 @@ class GrindingMakin(object):
 		while True:
 			self.arena_act()
 	
-	def arena_act(self):
+	def arena_act(self, other_tolerant=False):
 		
 		self.check_popup_close()
 		self.arena_check_inside_fighting()
@@ -761,6 +830,7 @@ class GrindingMakin(object):
 				self.print_log("arena tier is %d"%(self.arena_tier))
 			
 			if play:
+				self.arena_continue = True
 				self.arena_ask_for_help()
 				self.arena_add_to_team()
 				self.arena_find_match()
@@ -772,11 +842,13 @@ class GrindingMakin(object):
 		
 		elif image_manager.is_in_rearrange_team(img):
 			self.print_log("act: rearrange team")
+			self.arena_continue = True
 			self.arena_rearrange_team()
 			keyboard_send("0")
 		
 		elif image_manager.is_in_loading(img):
 			self.print_log("act: loading")
+			keyboard_send("0")
 			time.sleep(0.5)
 		
 		elif image_manager.is_in_more_fight_to_go(img):
@@ -788,24 +860,63 @@ class GrindingMakin(object):
 			self.arena_fight()
 		
 		elif image_manager.is_in_game_home(img):
-			self.print_log("in game home")
+			self.print_log("act: game home")
 			self.click_menu_fight(1,True)
+		
+		elif image_manager.is_in_bluestack_home(img) or image_manager.is_in_bluestack_login(img):
+			self.print_log("act: bluestack home")
+			self.arena_start_over()
+		
+		elif image_manager.is_login_other_device(img):
+			self.print_log("act: logged in in other device")
+			self.print_log("command waiting triggered")
+			self.arena_standby()
+			
+		elif image_manager.is_continue_button_available(img):
+			self.print_log("act: other, continue button available")
+			keyboard_send("0")
+			time.sleep(0.5)
+			
+		elif image_manager.is_menu_button_available(img):
+			self.print_log("act: other, menu button available")
+			if not other_tolerant:
+				self.print_log("other tolerant,3 sec")
+				
+				for x in range(0,15):
+					keyboard_send("0")
+					time.sleep(0.2)
+				self.arena_act(True)
+			else:
+				self.click_menu_fight(1,True)
+		else:
+			self.print_log("unknown state")
+			mouse_click(500,350)
 			
 
 	def arena_click_target(self):
 		"""get arena tier target and goto its team adding"""
 		time.sleep(0.5)
-		selected = image_manager.get_arena_target(None, "cornucopia")
+		TARGET = "any tier 3"
+		#~ TARGET = "t4basic"
+		selected = image_manager.get_arena_target(None, TARGET)
 		left = 2
-		giveup = 30
+		giveup = 10
 		while selected==(-1,-1):
 			if left>0:
-				mouse_click_drag(130,255,700,255)#drag left most
+				if TARGET=="t4basic":
+					self.click_swipe_left()
+					time.sleep(1)
+				else:
+					self.click_swipe_right()
 				left -= 1
 			else:
-				mouse_click_drag(700,255,130,255)#drag right most
+				if TARGET=="t4basic":
+					self.click_swipe_right()
+				else:
+					self.click_swipe_left()
+				left += 0.5
 			time.sleep(0.5)
-			selected = image_manager.get_arena_target()
+			selected = image_manager.get_arena_target(None, TARGET)
 			self.check_popup_close()
 			self.print_log("searching target")
 			giveup -= 1
@@ -834,21 +945,55 @@ class GrindingMakin(object):
 			self.print_log("waiting to be in arena room")
 			time.sleep(0.5)
 			self.check_popup_close()
-			if time.clock()-wait>300:
+			if time.clock()-wait>10:
 				break
 		#end arena_click_versus
 
 
-	def wait_timeout_or_check(self, timeout, check_method):
+	def wait_timeout_or_check(self, timeout, check_method, exit_when_check_method_condition=True):
 		"""
-		perform wait until check_method execution returns true or timeout is 0
+		perform wait until check_method execution returns check_method_condition or timeout is 0
 		checking performed every approx. 1 second passed
 		@param timeout in second
 		@param check_method the method checking pointer
+		@param check_method_condition default is True. break loop if check_method()==check_method_condition
+		@return True if check_method break, False if timeout break
 		"""
 		while True:
 			time.sleep(1)
-			if timeout<=0 or check_method():
-				break
+			if check_method()==exit_when_check_method_condition:
+				return True
+			if timeout<=0:
+				return False
 			timeout = timeout-1
 		#end wait_timeout_or_check
+
+
+	def click_swipe_right(self):
+		mouse_click_drag(130,255,700,255)
+		
+	def click_swipe_left(self):
+		mouse_click_drag(700,255,130,255)
+		
+
+if __name__=="__main__":
+	app = GrindingMakin()
+	print("the app object is 'app'")
+	v = raw_input("press enter to continue")
+	img = ImageGrab.grab()
+	def cmd_geser():
+		for y in range(300,400):
+			for x in range(0,700):
+				if img.getpixel((x,y))==(0,0,0):
+					while img.getpixel((x,y))==(0,0,0) and y>10:
+						y -= 5
+					
+					
+					mouse_click_drag(x,y,940,20, 5)
+					mouse_pos_set(940,20)
+					return
+	cmd_geser()
+	
+	app.calibrate_position()
+	app.arena_act_loop()
+	

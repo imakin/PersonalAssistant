@@ -42,6 +42,7 @@ class main(object):
 		code += tab(2)+"\"\"\""	+"\n"
 		code += tab(2)+"doc"		+"\n"
 		code += tab(2)+"\"\"\""	+"\n"
+		code += tab(2)+"# captured from %d,%d to %d,%d"%(x0,y0,x1,y1)	+"\n"
 		code += tab(2)+"img = self.get_grab(image_grab)"		+"\n"
 		
 		code += tab(2)+"step = %d"%step+"\n"

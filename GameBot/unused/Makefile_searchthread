@@ -1,0 +1,45 @@
+#Izzulmakin 2016-05-08
+
+EXE = makinplayer_search
+
+CFLAGS   = --enable-stdcall-fixup
+
+#bellow is the lib/dll path and name
+LIBMPI = msmpi
+HEADERMPI = C:/Program\ Files\ \(x86\)/Microsoft\ SDKs/MPI/Include/
+
+HEADER = -I$(HEADERMPI)
+LDFLAGS  = -L./lib/
+INCLUDE = -lAutoItX3 -l$(LIBMPI)
+
+#bellow is the source folder
+SRC_MAIN = src_searchthread
+
+
+CFILES   = $(shell find $(SRC_MAIN) -maxdepth 1 -type f -name '*.c')
+COBJECTS = $(CFILES:.c=.o)
+
+SOURCES = $(CFILES)
+OBJECTS = $(COBJECTS)
+
+CC = gcc
+
+
+all: $(EXE)
+	# Mbuh pie dadine kui mau wkwkwk
+
+$(EXE): $(OBJECTS)
+	# Linking...
+	$(CC) $(CFLAGS) $(OBJECTS)  $(INCLUDE)  $(LDFLAGS) -o $(EXE)
+
+$(SRC_MAIN)/%.o: $(SRC_MAIN)/%.c
+	# Compiling $<...
+	$(CC) $< -c $(INCLUDE) $(HEADER) $(LDFLAGS) -o $@
+
+run: all
+	./$(EXE)
+
+clean:
+	# Cleaning...
+	rm -f $(EXE) $(OBJECTS)
+
