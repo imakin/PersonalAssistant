@@ -2,6 +2,7 @@ from makinreusable.winfunction import *
 import time
 import urllib2
 import grinding
+import dueling
 from image import *
 import ImageGrab
 from questing_mapping import *
@@ -10,11 +11,11 @@ import questing_mapping_saver
 
 class QuestingMakin(object):
 	color_node = [(0,0xe4,0), (0,0xf8,0), (0,0xc5,0)]
-	node_range_min = 50
 	def __init__(self, gui_controller=None, grinding_controller=None):
 		self.gui = gui_controller
 		if grinding_controller==None:
 			self.grinding = grinding.GrindingMakin(self.gui)
+		self.dueling = dueling.DuelingMakin()
 		self.mapping = MappingMakin()
 		self.nodes = []
 
@@ -40,7 +41,7 @@ class QuestingMakin(object):
 				self.print_log("checking drawer")
 				options = 1
 				#1st option pos is 840,316, gab each is 44
-				self.node_add(840,316)
+				self.node_add(840,316,40) #portal, accociate min is 40 range
 				posy = 316 #pointer is in option#1
 				img = ImageGrab.grab()
 				while True:
@@ -60,11 +61,19 @@ class QuestingMakin(object):
 		start = time.clock()
 		while not found:
 			img = ImageGrab.grab()
-			for y in range(cy(100),cy(530)):
-				for x in range(cx(80),cx(957)):
-					if img.getpixel((x,y)) in self.color_node:
-						self.node_add(x,y)
-						found = True
+			time.sleep(0.5)
+			img2 = ImageGrab.grab()
+			for y in range(cy(106),cy(509)):
+				for x in range(cx(177),cx(889)):
+					col = img.getpixel((x,y))
+					#~ if col[0]==0 and col[2]==0 and col[1]>10 and col[1]<0xf9:
+					if col in self.color_node:
+						col2 = img2.getpixel((x,y))
+						#the color should be changed in time
+						if col2!=col:
+							
+							self.node_add(x,y, 40)#not portal, accociate min is 80
+							found = True
 			if int(time.clock()-start)>20:
 				self.print_log("too long")
 				return
@@ -88,9 +97,11 @@ class QuestingMakin(object):
 		#check if it's not true clickable node
 		img = ImageGrab.grab()
 		if img.getpixel((target[0], target[1]))==clicked:
-			self.print_log("this is not true clickable node, explored:")
-			self.print_log(self.mapping.node_map[self.mapping.current_node].explored)
-			self.mapping.current_node = self.mapping.last_changed_curnode
+			self.print_log("this is not true clickable node,")
+			if len(self.nodes)>1:
+				self.print_log("was about to pick a choice, revert back pos, explored:")
+				self.print_log(self.mapping.node_map[self.mapping.current_node].explored)
+				self.mapping.current_node = self.mapping.last_changed_curnode
 			
 		
 		req = image_manager.get_quest_request_help_button()
@@ -128,7 +139,7 @@ class QuestingMakin(object):
 		#end next_node_search
 	
 	
-	def node_add(self, x,y):
+	def node_add(self, x,y, accociate_min=40):
 		"""
 		check if x,y is too close to an already registered node
 		
@@ -141,7 +152,7 @@ class QuestingMakin(object):
 			return False
 		"""
 		for node in self.nodes:
-			if abs(node[0]-x)<40 and abs(node[1]-y)<40:
+			if abs(node[0]-x)<accociate_min and abs(node[1]-y)<accociate_min:
 				return False
 		self.nodes.append((x,y))
 		return True
@@ -159,7 +170,7 @@ class QuestingMakin(object):
 			self.mapping.restart()#restart
 			
 	
-	def questing_act_loop(self):
+	def loop(self):
 		try:
 			while True:
 				self.questing_act()
@@ -185,7 +196,7 @@ class QuestingMakin(object):
 			self.print_log("Warning! I will grind arena in 4")
 			mouse_click(938,318)
 			time.sleep(4)
-			self.grinding.arena_act_loop()
+			self.grinding.loop()
 		
 		else:
 			self.print_log("act: other")
@@ -230,5 +241,5 @@ if __name__=="__main__":
 	app = QuestingMakin()
 	app.grinding.calibrate_position()
 	print("the app object is 'app'")
-	#app.questing_act_loop()
+	#app.loop()
 	

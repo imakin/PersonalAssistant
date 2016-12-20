@@ -40,7 +40,8 @@ class main(object):
 		if self.is_key_c():
 			while self.is_key_c(): pass
 			print("add childs for current node")
-			self.current_childs_pos.append((int(mouse_pos_get()[0]), int(mous_pos_get()[1])))
+			mos = mouse_pos_get()
+			self.current_childs_pos.append((int(mos[0]), int(mos[1])))
 			
 		elif self.is_key_n():
 			while self.is_key_n(): pass

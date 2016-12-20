@@ -4,6 +4,8 @@ import urllib2
 from image import *
 
 class GrindingMakin(object):
+	arena_act_other_timing = 0
+	arena_tier_is_right = False
 	def __init__(self, gui_controller=None):
 		self.status = ""
 		self.quest_active = False
@@ -13,6 +15,8 @@ class GrindingMakin(object):
 		self.arena_matches = 0
 		self.arena_help = 30#when matches hit multiplier of this value, help alliance
 		self.arena_tier = 3#the tier in arena to pick
+		
+		self.report_mode = False#report everytime entering fight
 		
 		self.arena_continue = True #inside arena loop status
 		
@@ -197,9 +201,10 @@ class GrindingMakin(object):
 	def arena_ask_for_help(self):
 		"""in team adding, ask for help if any"""
 		self.status="ask for help"
+		time.sleep(1)
 		while image_manager.is_team_adding_need_help():
 			keyboard_send("Q")
-			time.sleep(3)
+			time.sleep(3.5)
 			self.check_popup_close()
 		if image_manager.is_team_adding_all_recharging():
 			self.print_log("less than 3 is ready, waiting")
@@ -300,6 +305,7 @@ class GrindingMakin(object):
 			if giveup<1:
 				should_check_again = False
 		keyboard_send("0")#done
+		time.sleep(3)
 		#end arena_rearrange_team
 			
 	
@@ -556,24 +562,45 @@ class GrindingMakin(object):
 	
 	
 	def arena_fight_state_mode(self):
+		self.arena_tier_is_right = False
 		self.print_log("start fighting")
 		self.status = "fighting in arena"
 		self.fighting_sp_mode = 2
 		sequence = 0
+		style_changed = False
 		while True:
-			keyboard_send("0")
 			
 			if sequence%4==0:
 				keyboard_send("K")
-			if sequence>10:
+			#~ if sequence<=10:
+				#~ keyboard_send("0")
+				#~ keyboard_send("J")
+			#~ if sequence>10:
+				#~ keyboard_send("F")
+				#~ if sequence>15:
+					#~ keyboard_send("D")
+					#~ if sequence>20:
+						#~ sequence = 0
+			if sequence>25:
+				sequence = 0
+				keyboard_send("K")
+			elif sequence>24:
+				keyboard_send("D")
+			elif sequence>22:
 				keyboard_send("F")
-				if sequence>15:
-					keyboard_send("D")
-					sequence = 0
+			else:
+				keyboard_send("0")
+				
 			sequence += 1
 			
 			img = ImageGrab.grab()
 			specialbt = img.getpixel((cx(133),cy(507)))
+			
+			if (not style_changed) and img.getpixel((cx(745),cy(93)))<(35,35,35):
+				self.print_log("enemy low")
+				style_changed = True
+				self.fighting_sp_mode = 1
+			
 			if self.fighting_sp_mode==1:
 				#~ if image_manager.get_dominant_color(specialbt)=="green":
 				keyboard_send(KEYCODE_SPACE)
@@ -603,6 +630,9 @@ class GrindingMakin(object):
 			time.sleep(0.2)
 		self.print_log("done fighting")
 		
+		if self.report_mode and style_changed:
+			self.url_read("http://makin.pythonanywhere.com/cloud_data/aaa/write/bot_arena_report/hit_enemy_low_confirmed")
+			self.report_mode = False
 	
 	
 	
@@ -641,7 +671,7 @@ class GrindingMakin(object):
 		
 		mouse_click(200,160)#mcoc game
 		time.sleep(10)
-		self.arena_act_loop()
+		#~ self.loop() #exiting this method is already in a loop
 		
 		#~ while (not image_manager.is_in_game_home()):
 			#~ self.print_log("waiting to be in game home")
@@ -770,31 +800,44 @@ class GrindingMakin(object):
 		mouse_click(500,446)
 
 
+	def url_read(self,url):
+		resp = urllib2.urlopen(url)
+		data = resp.read()
+		resp.close()
+		return data
+	
+
 	def arena_standby(self):
-		"""standby arena wait for online command"""
+		"""standby arena wait for online command.
+		exiting this method means we're ordered to grind"""
 		self.print_log("on your command")
 		while True:
 			self.print_log("waiting to be ordered to grind")
 			try:
-				resp = urllib2.urlopen("http://makin.pythonanywhere.com/cloud_data/aaa/read/bot_arena_startover/")
-				data = resp.read()
-				resp.close()
+				#~ resp = urllib2.urlopen("http://makin.pythonanywhere.com/cloud_data/aaa/read/bot_arena_startover/")
+				data = self.url_read("http://makin.pythonanywhere.com/cloud_data/aaa/read/bot_arena_startover/")
+				#~ resp.close()
 				self.print_log("command is "+data)
 				if data=='True':
 					self.print_log("we're ordered to grind")
-					resp = urllib2.urlopen("http://makin.pythonanywhere.com/cloud_data/aaa/write/bot_arena_startover/False")
-					data = resp.read()
-					resp.close()
+					self.url_read("http://makin.pythonanywhere.com/cloud_data/aaa/write/bot_arena_startover/False")
+					self.report_mode = True
+					self.url_read("http://makin.pythonanywhere.com/cloud_data/aaa/write/bot_arena_report/hit_enemy_low_unconfirmed")
 					self.arena_start_over()
-					return
+					return True
 				time.sleep(10)
-			except URLError:
+			except :
 				time.sleep(10)
+		return False
 		#end arena_standby
 	
-	def arena_act_loop(self):
+	def loop(self):
+		seq = 0
 		while True:
 			self.arena_act()
+			if seq%4==0:
+				self.print_log(time.ctime())
+				seq = 0
 	
 	def arena_act(self, other_tolerant=False):
 		
@@ -802,7 +845,7 @@ class GrindingMakin(object):
 		self.arena_check_inside_fighting()
 		
 		img = ImageGrab.grab()
-		
+		is_other = False
 		if image_manager.is_in_arena_room(img):#arena (versus) room
 			self.print_log("act: arena room")
 			self.arena_click_target()
@@ -817,17 +860,29 @@ class GrindingMakin(object):
 				mouse_click(145,210)
 				time.sleep(1)
 			play = True
-			is_tier_3 = image_manager.is_in_team_adding_tier(3)
+			is_tier_3 = image_manager.is_in_team_adding_tier_3()
 			if self.arena_tier==3 and is_tier_3:
 				self.print_log("in correct team adding tier 3")
 				
 			elif self.arena_tier==3 and not is_tier_3:
 				self.print_log("afraid not in correct tier")
-				self.click_back()
 				play = False
-				
+			elif self.arena_tier==4:
+				if image_manager.is_in_team_adding_tier_4():
+					self.print_log("in correct team adding tier 4")
+				else:
+					self.print_log("afraid not in correct tier")
+					play = False
 			else:
 				self.print_log("arena tier is %d"%(self.arena_tier))
+			
+			if not play and self.arena_tier_is_right:
+				self.print_log("But i'm pretty sure we've clicked correct arena")
+				play = True
+			elif not play:
+				self.click_back()
+				
+				
 			
 			if play:
 				self.arena_continue = True
@@ -848,8 +903,10 @@ class GrindingMakin(object):
 		
 		elif image_manager.is_in_loading(img):
 			self.print_log("act: loading")
-			keyboard_send("0")
-			time.sleep(0.5)
+			self.print_log(time.ctime())
+			while image_manager.is_in_loading():
+				keyboard_send("0")
+				time.sleep(0.8)
 		
 		elif image_manager.is_in_more_fight_to_go(img):
 			self.print_log("act: more fight to go")
@@ -871,33 +928,50 @@ class GrindingMakin(object):
 			self.print_log("act: logged in in other device")
 			self.print_log("command waiting triggered")
 			self.arena_standby()
-			
+		
+		elif image_manager.is_in_arena_after_fight_reward(img):
+			self.print_log("act: reward after finishing arena match")
+			while image_manager.is_in_arena_after_fight_reward():
+				time.sleep(0.5)
+				keyboard_send("0")
+		
 		elif image_manager.is_continue_button_available(img):
 			self.print_log("act: other, continue button available")
 			keyboard_send("0")
 			time.sleep(0.5)
 			
 		elif image_manager.is_menu_button_available(img):
+			is_other = True
 			self.print_log("act: other, menu button available")
-			if not other_tolerant:
-				self.print_log("other tolerant,3 sec")
-				
-				for x in range(0,15):
-					keyboard_send("0")
-					time.sleep(0.2)
-				self.arena_act(True)
+			if self.arena_act_other_timing==0:
+				self.arena_act_other_timing = time.clock()
+				self.print_log("other tolerant, 7 sec")
 			else:
-				self.click_menu_fight(1,True)
-		else:
-			self.print_log("unknown state")
-			mouse_click(500,350)
+				if time.clock()-self.arena_act_other_timing>7:
+					self.print_log("other tolerant 7 sec is over")
+					self.arena_act_other_timing = 0
+					self.click_menu_fight(1,True)
 			
+		else:
+			self.print_log("act: unknown state")
+			keyboard_send("J")
+			mouse_click(500,350)
+			self.calibrate_position()
+			time.sleep(2)
+		
+		if not is_other:
+			self.arena_act_other_timing = 0
 
 	def arena_click_target(self):
 		"""get arena tier target and goto its team adding"""
 		time.sleep(0.5)
-		TARGET = "any tier 3"
-		#~ TARGET = "t4basic"
+		
+		if self.arena_tier==3:
+			TARGET = "any tier 3"
+		elif self.arena_tier==4:
+			TARGET = "t4basic"
+		else:
+			TARGET = "any tier 3"
 		selected = image_manager.get_arena_target(None, TARGET)
 		left = 2
 		giveup = 10
@@ -926,6 +1000,7 @@ class GrindingMakin(object):
 				return
 		self.print_log("done searching target")
 		mouse_click(selected[0], selected[1])
+		self.arena_tier_is_right = True
 		time.sleep(2)
 		#end arena_click_target
 
@@ -995,5 +1070,5 @@ if __name__=="__main__":
 	cmd_geser()
 	
 	app.calibrate_position()
-	app.arena_act_loop()
+	app.loop()
 	

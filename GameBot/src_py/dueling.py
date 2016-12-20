@@ -10,16 +10,16 @@ import questing_mapping_saver
 
 class DuelingMakin(object):
 	
-	target_name = "Jeka Klim"
-	target_pos = 1
-	def __init__(self, target_name=None, target_pos = 1):
+	target_name = "HRMS0"
+	target_pos = 2
+	def __init__(self, target_name=None, target_pos = 2):
 		if target_name is not None:
 			self.target_name = target_name
 		self.target_pos = target_pos
 		self.grinding = grinding.GrindingMakin()
 		
 		
-	def dueling_act_loop(self):
+	def loop(self):
 		try:
 			while True:
 				self.dueling_act()
@@ -91,7 +91,7 @@ class DuelingMakin(object):
 	
 	def act_game_home(self):
 		time.sleep(4)
-		mouse_click(753,482) #click stash in game home
+		mouse_click(716,485) #click stash in game home
 		self.grinding.wait_timeout_or_check(3,image_manager.is_in_game_home,False)
 		self.grinding.wait_timeout_or_check(3,image_manager.is_in_loading,False)
 		
@@ -141,6 +141,12 @@ class DuelingMakin(object):
 			time.sleep(1)
 			mouse_click(476,183) #duel
 			time.sleep(3)
+		elif self.target_pos==2:
+			mouse_click(292,263) #click target
+			time.sleep(1)
+			mouse_click(476,259) #duel
+			time.sleep(3)
+			
 		
 		self.grinding.wait_timeout_or_check(2,image_manager.is_in_duel_continue,True)
 		self.act_room_duel_continue()
@@ -172,4 +178,4 @@ if __name__=="__main__":
 	try:input()
 	except:pass
 	app = DuelingMakin()
-	app.dueling_act_loop()
+	app.loop()

@@ -1,1 +1,1 @@
-requires AutoIt3.dll and Microsoft MPI
+this tool is so smart,, saving my playing time 

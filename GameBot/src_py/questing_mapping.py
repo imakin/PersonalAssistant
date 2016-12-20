@@ -32,7 +32,7 @@ class MappingMakin(object):
 	def restart(self):
 		self.current_node = 0
 	
-	def add_and_decide(self, node_positions):
+	def add_and_decide(self, node_positions, accociate_min=40):
 		"""
 		add or accociate nodes as a child of node_map[current_node],
 		and decide which one to go 
@@ -68,7 +68,7 @@ class MappingMakin(object):
 				print("check if found new")
 				relative_pos 	= (node_pos[0]-first_bro_pos[0], node_pos[1]-first_bro_pos[1])
 				
-				is_new = self.node_accociate(relative_pos[0], relative_pos[1], self.node_map[self.current_node].childs)
+				is_new = self.node_accociate(relative_pos[0], relative_pos[1], self.node_map[self.current_node].childs, accociate_min)
 				if is_new:
 					print("found new")
 					new_node = Node()
@@ -137,11 +137,11 @@ class MappingMakin(object):
 				
 		else:
 			#as current node has no child, all is new
-			print("as current node has no child, all is new")
+			print("as current node has no child, all is new (accociation must be done in questing.py)")
 			new_node = None
 			for node_pos in node_positions:
-				new_node = Node()
 				relative_pos 	= (node_pos[0]-first_bro_pos[0], node_pos[1]-first_bro_pos[1])
+				new_node = Node()
 				new_node.pos = relative_pos
 				print("saving",node_pos)
 				self.node_map[self.current_node].childs.append(new_node)
@@ -156,11 +156,11 @@ class MappingMakin(object):
 	
 	
 	
-	def node_accociate(self, x,y, world):
+	def node_accociate(self, x,y, world, accociate_min=40):
 		"""
 		check whether node (x,y) is new or should be accociated to existing node, in a map world
 		
-		@param world is the existing node formated [Node0, Node1, Node2, ...] with NodeX is a Node object
+		@param world is the existing Node() array formated [Node0, Node1, Node2, ...] with NodeX is a Node object
 		@return 
 			if not accociated to any node:
 				return True
@@ -168,7 +168,7 @@ class MappingMakin(object):
 				return False
 		"""
 		for node in world:
-			if abs(node.pos[0]-x)<50 and abs(node.pos[1]-y)<50:
+			if abs(node.pos[0]-x)<accociate_min and abs(node.pos[1]-y)<accociate_min:
 				return False
 		return True
 

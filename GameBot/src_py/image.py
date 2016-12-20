@@ -4,6 +4,8 @@ all reusable image processing should be here
 from rescaler import cx,cy
 import ImageGrab
 import time
+from makinreusable.winfunction import *
+
 
 class ImageManager(object):
 	screen_size = (970,632)
@@ -316,13 +318,14 @@ class ImageManager(object):
 		#end is_in_game_home
 	
 	
-	def is_in_fighting(self, image_grab=None):
-		""" is inside fighting match """
+	def is_in_fighting(self, image_grab=None, leftborder=(466,57), rightborder=(511,57)):
+		""" is inside fighting match  check for pause button
+		the position of left & right border of pause button can be specified in param"""
 		img  = self.get_grab(image_grab)
 		
 		#check if there is pause button
-		leftborder = img.getpixel((466,57))
-		rightborder = img.getpixel((511,57))
+		leftborder = img.getpixel(leftborder)
+		rightborder = img.getpixel(rightborder)
 		if leftborder==(0x22,0x22,0x22) or leftborder==(0x21,0x21,0x21):
 			if rightborder==(0x22,0x22,0x22) or rightborder==(0x21,0x21,0x21):
 				return True
@@ -435,7 +438,28 @@ class ImageManager(object):
 					return True
 		return False
 		#end is_in_team_adding_tier_3
-	
+	def is_in_team_adding_tier_4(self, image_grab=None):
+		"""
+		t4basic 1000
+		"""
+		# captured from 98,550 to 138,564
+		img = self.get_grab(image_grab)
+		step = 10
+		coltol = 4
+		for y_code in range(549,551):
+			for x_code in range(97,99):
+				if (
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(0))),(47,47,47),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(10),y_code+cy(0))),(47,47,47),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(20),y_code+cy(0))),(47,47,47),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(30),y_code+cy(0))),(47,47,47),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(10))),(41,41,41),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(10),y_code+cy(10))),(42,42,42),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(20),y_code+cy(10))),(53,53,53),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(30),y_code+cy(10))),(58,58,58),coltol)
+				):
+					return True
+		return False
 	
 	def is_in_team_adding_tier_1(self, image_grab=None):
 		"""
@@ -488,10 +512,41 @@ class ImageManager(object):
 			else:
 				print("tier 3: as long as not tier 1 and 2 is accepted")
 				return True
+		elif tier==4:
+			return self.is_in_team_adding_tier_4()
 		#TODO: OTHER tier value
 		return False
 		#end is_in_team_adding_tier
 		
+	
+	def is_in_arena_after_fight_reward(self, image_grab=None):
+		"""
+		arena after fight rewards where there used to be 300chips
+		check for REWARDS text
+		"""
+		# captured from 438,199 to 539,215
+		img = self.get_grab(image_grab)
+		step = 10
+		coltol = 10
+		for y_code in range(198,200):
+			for x_code in range(437,439):
+				if (
+					self.is_color_similar(img.getpixel((x_code+cx(0),y_code+cy(0))),(43,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(10),y_code+cy(0))),(43,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(10),y_code+cy(10))),(253,253,253),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(20),y_code+cy(10))),(222,222,223),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(30),y_code+cy(10))),(253,253,253),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(40),y_code+cy(10))),(205,206,207),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(50),y_code+cy(10))),(250,250,250),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(60),y_code+cy(10))),(43,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(70),y_code+cy(10))),(242,242,242),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(80),y_code+cy(10))),(43,44,48),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(90),y_code+cy(10))),(173,173,174),coltol) and
+					self.is_color_similar(img.getpixel((x_code+cx(100),y_code+cy(10))),(201,201,202),coltol)
+				):
+					return True
+		return False
+	
 	
 	def is_stuck(self, image_grab=None):
 		"""
@@ -1189,6 +1244,19 @@ class ImageManager(object):
 		#end get_dominant_color_grab
 	
 	
+	def calibrate_position(self):
+		win = self.find_bluestack_logo()
+		print("found bluestack logo in (%d,%d)"%(win[0],win[1]))
+		if (win[0]==30 and win[1]==12):
+			print("window position is good")
+		elif (win[0]<=30 and win[1]<=12):
+			print("window slightly missplaced")
+			mouse_click_drag(win[0],win[1], 60, 42)
+			mouse_click_drag(60,42, 30, 12)
+		else:
+			print("window will be replaced")
+			mouse_click_drag(win[0],win[1], 30, 12)
+		#end calibrate_position	
 	
 	
 	
