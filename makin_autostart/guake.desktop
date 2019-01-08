@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Guake
+Type=Application
+Exec=guake
+Terminal=false
+Icon=guake
+Comment=guake terminal.
+NoDisplay=false
+Categories=Utility;
+Name[en_US]=guake

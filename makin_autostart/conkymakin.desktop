@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Conky makin
+Type=Application
+Exec=/home/kareem/conkymakin.bash
+Terminal=false
+Icon=conky
+Comment=The finest dock no money can buy.
+NoDisplay=false
+Categories=Utility;

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=GnomeTerminal
+Type=Application
+Exec=gnome-terminal
+Terminal=false
+Icon=guake
+Comment=gnome terminal.
+NoDisplay=false
+Categories=Utility;
+Name[en_US]=gnometerminal
