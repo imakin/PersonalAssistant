@@ -32,7 +32,7 @@ if (sys.argv[0]!=""):
 print(realpath)
 
 class Main(object):
-  WAIT_TIME = 4*60 
+  WAIT_TIME = 6 
   def __init__(self):
     self.tv_shutdown = Main.WAIT_TIME # 10menit
     
